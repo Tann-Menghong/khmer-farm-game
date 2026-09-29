@@ -1,7 +1,7 @@
 {
-  "versionCode": 6,
-  "versionName": "1.4.0",
-  "apkUrl": "https://raw.githubusercontent.com/Tann-Menghong/khmer-farm-game/main/releases/srok-srae-v1.4-debug.apk",
-  "sha256": "97f6428bf0ec8e74457f61ce67920070003456682b25ab79a66b8ef5ccc99b6f",
-  "notes": "The Cambodian village map is here. This release adds in-app update checks and safer APK downloads."
+  "versionCode": 7,
+  "versionName": "1.4.1",
+  "apkUrl": "https://raw.githubusercontent.com/Tann-Menghong/khmer-farm-game/main/releases/srok-srae-v1.4.1-release.apk",
+  "sha256": "031bcb06958f9e0f326672b1af3807212a33ba19ab61a2c9ff1eec24171da0d1",
+  "notes": "Installable release build with the Cambodian village map, farming stories, and in-app updates."
 }

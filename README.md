@@ -17,19 +17,19 @@ A complete, self-contained, offline Cambodian village farming game for Android. 
 9. Give favorite items to four village neighbors. Friendship earns rewards and helps open the makers fair.
 10. Tap buildings on the map for fishing, animals, cooking, weaving, orders, trading, and regional journeys. Buy decorations in the Journal, then tap Arrange on the map to move them.
 
-The game has an interactive isometric village map, thirteen crops, eleven cooking recipes, four workshop crafts, four travel destinations, four permanent upgrades, three animal or fishing stations, rotating village orders, four friends, movable decorations, twelve achievements, English and Khmer controls, sound settings, a help screen, and automatic local saves. Farming needs no internet connection or account. Version 1.4 reads and upgrades saves from versions 1.0 through 1.3.
+The game has an interactive isometric village map, thirteen crops, eleven cooking recipes, four workshop crafts, four travel destinations, four permanent upgrades, three animal or fishing stations, rotating village orders, four friends, movable decorations, twelve achievements, English and Khmer controls, sound settings, a help screen, and automatic local saves. Farming needs no internet connection or account. Version 1.4.1 reads and upgrades saves from versions 1.0 through 1.4.
 
 The art is made from original CSS shapes, a small Android vector icon, and device emoji. Recipes use simplified game ingredients. Cambodian cultural names and Khmer copy should be reviewed with Cambodian players before public release.
 
-## Install the test APK
+## Install the release APK
 
-Download [the current debug APK](releases/srok-srae-v1.4-debug.apk) to an Android phone and open it, or use Android Debug Bridge:
+Download [Srok Srae 1.4.1 release APK](releases/srok-srae-v1.4.1-release.apk) to an Android phone and open it, or use Android Debug Bridge:
 
 ```powershell
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+adb install -r releases/srok-srae-v1.4.1-release.apk
 ```
 
-This is a debug-signed APK for direct installation. A Play Store release requires your own production signing key, store listing, device testing, and final cultural and language review.
+This is a non-debuggable release build signed with the same local prototype certificate as earlier APKs, so it can install over them without erasing saved games. It is suitable for direct sideloading. Google Play publication requires a separate production signing plan, store listing, device testing, and final cultural and language review.
 
 ## In-app updates
 
@@ -42,7 +42,7 @@ To publish a later update, increase `versionCode` and `versionName`, build a new
 Open the folder in Android Studio and build the `app` module, or use JDK 17 and the Android SDK:
 
 ```powershell
-.\gradlew.bat assembleDebug
+.\gradlew.bat assembleRelease
 node scripts/smoke-test.mjs
 ```
 

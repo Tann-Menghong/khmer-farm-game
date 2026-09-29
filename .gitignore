@@ -1,0 +1,7 @@
+.gradle/
+.chrome-check/
+build/
+app/build/
+*.iml
+screen-check.png
+emulator-*.png

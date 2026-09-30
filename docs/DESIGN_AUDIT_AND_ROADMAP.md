@@ -168,7 +168,7 @@ Generated sheets are first pass source art, not a claim that every final frame a
 
 ## M. Next Recommended Version
 
-**v1.5.0** is the next local build after v1.4.1. Release notes for this local build:
+**v1.5.0** is the published build after v1.4.1. Release notes:
 
 - **Added:** illustrated sprite atlases, corn/watermelon/chili, grilled corn/fruit plate, field seed picker, short guided onboarding, animal feeding, cast/bite fishing interaction, save backup.
 - **Improved:** visual crop stages, village map, navigation art, updater information/progress/cancel/retry.

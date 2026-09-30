@@ -23,7 +23,7 @@ The v1.5.0 art includes five original illustrated WebP atlases, with source PNGs
 
 ## Install the release APK
 
-Download the [Srok Srae 1.5.0 APK](releases/srok-srae-v1.5.0-release.apk) to an Android phone and open it, or use Android Debug Bridge. The previous GitHub release is [v1.4.1](https://github.com/Tann-Menghong/khmer-farm-game/releases/tag/v1.4.1).
+Download the [Srok Srae 1.5.0 APK](https://github.com/Tann-Menghong/khmer-farm-game/releases/download/v1.5.0/srok-srae-v1.5.0-release.apk) to an Android phone and open it, or use Android Debug Bridge. See the [v1.5.0 release notes](https://github.com/Tann-Menghong/khmer-farm-game/releases/tag/v1.5.0).
 
 ```powershell
 adb install -r releases/srok-srae-v1.5.0-release.apk

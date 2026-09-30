@@ -1,13 +1,13 @@
 # ស្រុកស្រែ • Srok Srae
 
-A complete, self-contained, offline Cambodian village farming game for Android. It is an original single-player game with three story campaigns and three endings. It does not use Hay Day code, art, names, or assets.
+An original offline Cambodian village farming game for Android, with three story campaigns and three endings. The [design audit and roadmap](docs/DESIGN_AUDIT_AND_ROADMAP.md) distinguishes current features from planned polish and content.
 
 [Preview the game](preview.png)
 
 ## Play
 
-1. Drag the village map to explore your farm, use + and − to zoom, select a seed, then tap a field to plant or harvest. The Field grid is available for precise planting. Rice seeds are always free.
-2. Tap the pond to catch fish. Buy chickens and a water buffalo as you level up, then collect their products.
+1. Drag the village map to explore your farm, use + and − to zoom, then tap an empty field to choose a seed. Tap a ripe field to harvest. The Field grid is available for precise planting. Rice seeds are always free.
+2. Tap the pond to cast a line and catch fish. Buy chickens and a water buffalo as you level up, feed them, then collect their products.
 3. Fill village orders, cook meals, and sell goods in the market.
 4. Follow five village chapters, decorate the village, and host the festival.
 5. Explore Tonle Sap, Kep, Kampong Speu, and Mondulkiri for regional goods. Complete four journey chapters and hold a river celebration.
@@ -17,23 +17,23 @@ A complete, self-contained, offline Cambodian village farming game for Android. 
 9. Give favorite items to four village neighbors. Friendship earns rewards and helps open the makers fair.
 10. Tap buildings on the map for fishing, animals, cooking, weaving, orders, trading, and regional journeys. Buy decorations in the Journal, then tap Arrange on the map to move them.
 
-The game has an interactive isometric village map, thirteen crops, eleven cooking recipes, four workshop crafts, four travel destinations, four permanent upgrades, three animal or fishing stations, rotating village orders, four friends, movable decorations, twelve achievements, English and Khmer controls, sound settings, a help screen, and automatic local saves. Farming needs no internet connection or account. Version 1.4.1 reads and upgrades saves from versions 1.0 through 1.4.
+The game has an interactive isometric village map, sixteen crops, thirteen cooking recipes, four workshop crafts, four travel destinations, four permanent upgrades, three animal or fishing stations, rotating village orders, four friends, movable decorations, twelve achievements, English and Khmer controls, sound and reduced motion settings, a help screen, and automatic local saves with backup recovery. Farming needs no internet connection or account. Version 1.5.0 reads and upgrades earlier local saves.
 
-The art is made from original CSS shapes, a small Android vector icon, and device emoji. Recipes use simplified game ingredients. Cambodian cultural names and Khmer copy should be reviewed with Cambodian players before public release.
+The v1.5.0 art includes five original illustrated WebP atlases, with source PNGs in `art-source/`. Some secondary labels and effects still use Unicode symbols and need a final art pass. Recipes use simplified game ingredients. Cambodian cultural names and Khmer copy should be reviewed with Cambodian players before wider release.
 
 ## Install the release APK
 
-Download [Srok Srae 1.4.1 release APK](releases/srok-srae-v1.4.1-release.apk) to an Android phone and open it, or use Android Debug Bridge:
+Download the [Srok Srae 1.5.0 APK](releases/srok-srae-v1.5.0-release.apk) to an Android phone and open it, or use Android Debug Bridge. The previous GitHub release is [v1.4.1](https://github.com/Tann-Menghong/khmer-farm-game/releases/tag/v1.4.1).
 
 ```powershell
-adb install -r releases/srok-srae-v1.4.1-release.apk
+adb install -r releases/srok-srae-v1.5.0-release.apk
 ```
 
-This is a non-debuggable release build signed with the same local prototype certificate as earlier APKs, so it can install over them without erasing saved games. It is suitable for direct sideloading. Google Play publication requires a separate production signing plan, store listing, device testing, and final cultural and language review.
+This is a non-debuggable release build signed with the local prototype certificate. The signature was verified, but installation over an existing APK requires that the existing APK was signed with the same certificate. Google Play publication requires a protected production signing plan, store listing, device testing, and final cultural and language review.
 
 ## In-app updates
 
-When online, the app checks the public [release manifest](releases/latest.json) at launch at most once per day. You can also use **Settings → Check**. If a newer version is listed, the app offers to download it, checks its SHA-256 hash, and opens Android's installer. Android asks the player to approve installation and may require allowing installs from Srok Srae. The game itself remains playable offline. Existing local saves remain in place when an update installs over the same app.
+When online, the app checks the public [release manifest](releases/latest.json) at launch at most once per day. You can also use **Settings → Check**. If a newer published version is listed, the app shows release notes and size when provided, then downloads only after player action. Progress, cancel, retry and SHA-256 verification precede Android's installer. Android asks the player to approve installation and may require allowing installs from Srok Srae. The game itself remains playable offline. The v1.5.0 manifest points to the bundled APK and its verified hash.
 
 To publish a later update, increase `versionCode` and `versionName`, build a new APK with the **same signing key**, copy it into `releases/`, then update `releases/latest.json` with its URL and SHA-256 hash before pushing. These prototype APKs use the local Android debug key; APKs built with a different key cannot update this installation. The public GitHub repository hosts the update files, so a private repository would require a different update server.
 
@@ -46,7 +46,7 @@ Open the folder in Android Studio and build the `app` module, or use JDK 17 and 
 node scripts/smoke-test.mjs
 ```
 
-The smoke test uses locally installed Google Chrome and checks the map, farming, fishing, old-save migration, all three endings, the daily gift, travel, regional cooking, all four upgrades, workshop crafting, friendships, and land expansion. The app has also been launched and interacted with on Android emulators.
+The smoke test uses locally installed Google Chrome and checks the map, farming, fishing, animal care, old-save migration and recovery, all three endings, the daily gift, travel, regional cooking, all four upgrades, workshop crafting, friendships, and land expansion. `node scripts/capture-ui.mjs` saves English and Khmer 390 px visual previews. Device installation and the live update download need a fresh verification pass for v1.5.0.
 
 Regional themes were checked against Cambodia's Ministry of Tourism material on [Tonle Sap](https://tourismcambodia.org/public/provinces/search/detail/389/phnom-krom-tonle-sap-lake), [Kep seafood and Kampot pepper](https://www.tourismcambodia.org/public/index.php/official-activities/new-beginnings-a-gourmet-guide-to-cambodia), and [regional products including Kampong Speu palm sugar and Koh Trong pomelos](https://www.tourismcambodia.org/public/index.php/official-activities/nom-banh-chok-siem-reap-set-for-trademark-by-ministry). Game recipes use simplified ingredients.
 

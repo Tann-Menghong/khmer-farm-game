@@ -8,6 +8,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import org.json.JSONObject;
 
@@ -18,6 +21,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Checks a small public release manifest and installs only a matching SHA-256 APK. */
 final class UpdateManager {
@@ -79,18 +83,37 @@ final class UpdateManager {
     private void showUpdate(JSONObject manifest) {
         String version = manifest.optString("versionName", "new version");
         String notes = manifest.optString("notes", "New village improvements are ready.");
+        String current;
+        try { current = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).versionName; }
+        catch (Exception ignored) { current = "installed version"; }
+        long bytes = manifest.optLong("apkSize", 0);
+        String size = bytes > 0 ? String.format(java.util.Locale.US, "\nDownload size: %.1f MB", bytes / 1048576.0) : "";
         new AlertDialog.Builder(activity)
                 .setTitle("Srok Srae " + version + " is ready")
-                .setMessage(notes + "\n\nDownload and install this update? Your farm save stays on this device.")
+                .setMessage("Installed: " + current + "\nAvailable: " + version + size + "\n\n" + notes
+                        + "\n\nDownload and install? Android will ask before installation. Your farm save stays on this device.")
                 .setNegativeButton("Later", null)
                 .setPositiveButton("Update", (dialog, which) -> download(manifest))
                 .show();
     }
 
     private void download(JSONObject manifest) {
+        AtomicBoolean cancelled = new AtomicBoolean(false);
+        LinearLayout layout = new LinearLayout(activity);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        int padding = (int) (20 * activity.getResources().getDisplayMetrics().density);
+        layout.setPadding(padding, padding, padding, padding);
+        TextView status = new TextView(activity);
+        status.setText("Connecting…");
+        ProgressBar bar = new ProgressBar(activity, null, android.R.attr.progressBarStyleHorizontal);
+        bar.setMax(100);
+        bar.setIndeterminate(true);
+        layout.addView(status);
+        layout.addView(bar);
         AlertDialog progress = new AlertDialog.Builder(activity)
                 .setTitle("Downloading update")
-                .setMessage("Please wait while the APK is verified.")
+                .setView(layout)
+                .setNegativeButton("Cancel", (dialog, which) -> cancelled.set(true))
                 .setCancelable(false)
                 .create();
         progress.show();
@@ -103,16 +126,33 @@ final class UpdateManager {
                 HttpURLConnection connection = open(url, 15000);
                 MessageDigest digest = MessageDigest.getInstance("SHA-256");
                 long total = 0;
+                long reportedSize = connection.getContentLengthLong();
+                long expectedSize = manifest.optLong("apkSize", 0);
+                long displaySize = expectedSize > 0 ? expectedSize : reportedSize;
                 try (InputStream input = connection.getInputStream(); FileOutputStream output = new FileOutputStream(part)) {
                     byte[] buffer = new byte[8192];
                     int count;
                     while ((count = input.read(buffer)) != -1) {
+                        if (cancelled.get()) throw new InterruptedException("Download cancelled");
                         total += count;
                         if (total > 120L * 1024 * 1024) throw new Exception("Update too large");
                         output.write(buffer, 0, count);
                         digest.update(buffer, 0, count);
+                        long received = total;
+                        activity.runOnUiThread(() -> {
+                            if (!progress.isShowing()) return;
+                            if (displaySize > 0) {
+                                int percent = (int) Math.min(100, received * 100 / displaySize);
+                                bar.setIndeterminate(false);
+                                bar.setProgress(percent);
+                                status.setText(percent + "%  •  " + received / 1024 + " KB / " + displaySize / 1024 + " KB");
+                            } else status.setText(received / 1024 + " KB downloaded");
+                        });
                     }
                 } finally { connection.disconnect(); }
+                if (cancelled.get()) throw new InterruptedException("Download cancelled");
+                if (expectedSize > 0 && total != expectedSize) throw new Exception("Update size mismatch");
+                activity.runOnUiThread(() -> status.setText("Verifying download…"));
                 StringBuilder actual = new StringBuilder();
                 for (byte b : digest.digest()) actual.append(String.format("%02x", b & 0xff));
                 if (!actual.toString().equalsIgnoreCase(expected)) throw new Exception("Update checksum mismatch");
@@ -125,7 +165,12 @@ final class UpdateManager {
                 part.delete();
                 activity.runOnUiThread(() -> {
                     progress.dismiss();
-                    if (!activity.isFinishing()) message("Download failed", "The update could not be downloaded or verified. Please try again.");
+                    if (!cancelled.get() && !activity.isFinishing()) new AlertDialog.Builder(activity)
+                            .setTitle("Download failed")
+                            .setMessage("The update could not be downloaded or verified. Check your connection and try again.")
+                            .setNegativeButton("Later", null)
+                            .setPositiveButton("Retry", (dialog, which) -> download(manifest))
+                            .show();
                 });
             }
         }, "SrokSraeUpdateDownload").start();

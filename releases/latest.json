@@ -1,8 +1,8 @@
 {
-  "versionCode": 8,
-  "versionName": "1.5.0",
-  "apkUrl": "https://raw.githubusercontent.com/Tann-Menghong/khmer-farm-game/main/releases/srok-srae-v1.5.0-release.apk",
-  "apkSize": 3176200,
-  "sha256": "cd6b22a4e5788985cb93fccbd1887de78176bb6e378ad750f7e9d7e17271a1ad",
-  "notes": "Original Cambodian illustrated village art, guided farming, new crops and recipes, animal care, fishing interaction, safer saves, and clearer updates."
+  "versionCode": 10,
+  "versionName": "1.7.0",
+  "apkUrl": "https://raw.githubusercontent.com/Tann-Menghong/khmer-farm-game/main/releases/srok-srae-v1.7.0-release.apk",
+  "apkSize": 3664035,
+  "sha256": "a5286e532d53c285abb5c8dc87eb3ea51b52546e1bf2fc5ab35c0510256bfea2",
+  "notes": "Five offline village mini games, earnable family home and produce truck with useful benefits, cleaner phone layout, original HD scenery and property art, graphics options, and safe migration of existing progress."
 }

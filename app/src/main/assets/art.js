@@ -28,13 +28,15 @@
   entries.net = entries.fish_pond;
   entries.cart = entries.river_landing;
   entries.stove = entries.cooking_house;
+  const standalone = {family_home:'art/family-home.webp',produce_truck:'art/produce-truck.webp'};
 
   function sprite(id, className='') {
+    if(standalone[id])return `<img class="art-image ${className}" src="${standalone[id]}" alt="" loading="lazy" decoding="async">`;
     const entry = entries[id] || entries.basket;
     const x = (entry.index % 4) * 100 / 3;
     const y = Math.floor(entry.index / 4) * 100 / 3;
     return `<span class="art-sprite art-${entry.sheet} ${className}" style="background-position:${x}% ${y}%" aria-hidden="true"></span>`;
   }
 
-  window.SrokArt = {sprite, has: id => !!entries[id]};
+  window.SrokArt = {sprite, has: id => !!(entries[id]||standalone[id])};
 })();

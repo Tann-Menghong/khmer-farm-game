@@ -53,12 +53,29 @@ try {
   await call('Runtime.evaluate',{expression:"SrokGame.act('close'); SrokGame.act('language'); (()=>{const s=SrokGame.getState();s.xp=220;s.inventory.cotton=3;localStorage.setItem('srok-srae-save-v2',JSON.stringify(s))})()"});
   await call('Page.reload');
   await delay(600);
+  await call('Runtime.evaluate',{expression:"SrokGame.act('farmMode','games')"});
+  const gamesHub=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+  await writeFile(path.join(root,'qa','games-hub-mobile.png'),Buffer.from(gamesHub.data,'base64'));
+  await call('Runtime.evaluate',{expression:"SrokGame.act('openMini','fish')"});
+  const fish=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+  await writeFile(path.join(root,'qa','fish-mini-mobile.png'),Buffer.from(fish.data,'base64'));
+  await call('Runtime.evaluate',{expression:"SrokGame.act('close'); SrokGame.act('openMini','cargo')"});
+  const cargo=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+  await writeFile(path.join(root,'qa','cargo-mini-mobile.png'),Buffer.from(cargo.data,'base64'));
+  await call('Runtime.evaluate',{expression:"SrokGame.act('close'); SrokGame.act('openMini','recipe')"});
+  await delay(350);
+  const recipe=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+  await writeFile(path.join(root,'qa','recipe-mini-mobile.png'),Buffer.from(recipe.data,'base64'));
+  await call('Runtime.evaluate',{expression:"SrokGame.act('close')"});
   await call('Runtime.evaluate',{expression:"SrokGame.act('tab','kitchen'); SrokGame.act('kitchenMode','workshop'); SrokGame.act('openMini','loom')"});
   const loom=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   await writeFile(path.join(root,'qa','loom-mini-mobile.png'),Buffer.from(loom.data,'base64'));
   await call('Runtime.evaluate',{expression:"SrokGame.act('tab','market'); SrokGame.act('openMini','market')"});
   const market=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   await writeFile(path.join(root,'qa','market-mini-mobile.png'),Buffer.from(market.data,'base64'));
+  await call('Runtime.evaluate',{expression:"SrokGame.act('close')"});
+  const marketScreen=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+  await writeFile(path.join(root,'qa','market-mobile.png'),Buffer.from(marketScreen.data,'base64'));
   await call('Runtime.evaluate',{expression:"SrokGame.act('tab','farm'); SrokGame.act('openMini','lotus')"});
   const lotus=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   await writeFile(path.join(root,'qa','lotus-mini-mobile.png'),Buffer.from(lotus.data,'base64'));
@@ -75,7 +92,7 @@ try {
   await delay(200);
   const explore=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   await writeFile(path.join(root,'qa','explore-hd-mobile.png'),Buffer.from(explore.data,'base64'));
-  console.log('Saved phone previews for the farm, five mini games, property, and HD scenery in qa/');
+  console.log('Saved phone previews for the farm, Games hub, eight mini games, market, property, and HD scenery in qa/');
 } finally {
   if(ws)ws.close();
   proc.kill();

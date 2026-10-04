@@ -54,6 +54,9 @@
       cargoRound(session);
     } else if(id==='recipe') {
       recipeRound(session);
+    } else if(id==='buffalo') {
+      session.care=['brush','rinse','dry'];
+      session.options=shuffle(session.care);
     } else return null;
     return session;
   }
@@ -118,6 +121,10 @@
       if(!session.options.includes(value))return {correct:false,finished:false};
       correct=value===session.recipe.missing;
       if(correct){session.round++;if(session.round<3)recipeRound(session);}
+    } else if(session.id==='buffalo') {
+      if(!session.options.includes(value))return {correct:false,finished:false};
+      correct=value===session.care[session.round];
+      if(correct){session.round++;session.options=shuffle(session.care);}
     }
     if(!correct && session.id!=='canal' && !(session.id==='lotus'&&session.open.length===1))session.mistakes++;
     session.finished=session.round===(session.id==='loom'||session.id==='canal'?4:3);

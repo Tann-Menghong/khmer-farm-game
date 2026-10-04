@@ -1,5 +1,5 @@
 import {spawn} from 'node:child_process';
-import {mkdtemp, rm} from 'node:fs/promises';
+import {mkdtemp, rm, stat} from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
@@ -23,6 +23,10 @@ async function evalJs(expression) {
 }
 async function waitForGame(){for(let i=0;i<40;i++){try{if(await evalJs('typeof SrokGame !== "undefined"'))return;}catch(_){}await pause(100);}throw new Error('Game did not load');}
 function assert(condition,message){if(!condition)throw new Error(message);}
+for(const crop of ['rice','lotus','banana','morning_glory'])for(let stage=0;stage<5;stage++){
+  const image=path.join(root,'app','src','main','assets','art','crops',`${crop}-${stage}.webp`);
+  assert((await stat(image)).size>1000,`Missing or empty ${crop} growth artwork, stage ${stage}`);
+}
 async function completeFish(){
   for(let i=0;i<3;i++)await evalJs("document.querySelector('.mini-fish-tile.fish').click()");
 }
@@ -36,8 +40,10 @@ try {
   await waitForGame();
   assert(await evalJs('!!document.querySelector(".dashboard-overview")'),'Farm dashboard missing');
   assert(await evalJs('getComputedStyle(document.querySelector("#map-world")).backgroundImage.includes("village-map-ground.webp")'),'Illustrated village map missing');
-  await evalJs("SrokGame.act('profile'); document.querySelector('#profile-name').value='Sokha'; SrokGame.act('saveProfile')");
+  await evalJs("SrokGame.act('profile'); document.querySelector('#profile-name').value='Sokha'; document.querySelector('#farm-name').value='Lotus Farm'; document.querySelector('#village-name').value='Srae Thmey'; document.querySelector('input[value=farmer_avatar_basket]').checked=true; SrokGame.act('saveProfile')");
   assert((await evalJs('SrokGame.getState().profileName'))==='Sokha','Player profile was not saved');
+  assert((await evalJs('SrokGame.getState().avatarId'))==='farmer_avatar_basket','Player avatar was not saved');
+  assert((await evalJs('SrokGame.getState().farmName'))==='Lotus Farm','Farm name was not saved');
   await evalJs("SrokGame.act('startTutorial')");
   assert((await evalJs('SrokGame.getState().tutorialStep'))===1,'Guided tutorial did not start');
   assert(await evalJs('!!document.querySelector("#farm-map .map-plot")'),'Farm map did not render');
@@ -49,9 +55,13 @@ try {
   await evalJs("SrokGame.act('farmMode','map')");
   await evalJs("SrokGame.act('close'); document.querySelector('.map-plot[data-id=\"0\"]').click(); SrokGame.act('plantChosen','rice')");
   assert((await evalJs('SrokGame.getState().plots[0].id'))==='rice','Rice planting failed');
+  assert(await evalJs('document.querySelector(".map-plot[data-id=\'0\'] .crop-stage-art").src.endsWith("rice-0.webp")'),'Seeded rice artwork missing');
+  assert(await evalJs('document.querySelector(".map-plot[data-id=\'0\'] .crop-stage-art").decode().then(()=>true,()=>false)'),'Rice artwork did not decode');
   assert((await evalJs('SrokGame.getState().tutorialStep'))===2,'Tutorial planting step failed');
   const startingFish=await evalJs('SrokGame.getState().inventory.fish || 0');
   await evalJs('Date.now=()=>new Date().getTime()+30000');
+  await evalJs("SrokGame.act('farmMode','fields')");
+  assert(await evalJs('document.querySelector(".plot[data-id=\'0\'] .crop-stage-art").src.endsWith("rice-4.webp")'),'Ripe rice artwork missing');
   await evalJs("SrokGame.act('plot','0'); SrokGame.act('fishPanel'); SrokGame.act('fishCast')");
   await evalJs('Date.now=()=>new Date().getTime()+33000');
   await evalJs("SrokGame.act('fishCatch')");
@@ -62,7 +72,7 @@ try {
   assert((await evalJs('SrokGame.getState().inventory.fish'))===startingFish+1,'Fishing failed');
   await evalJs(`(()=>{const s=SrokGame.getState();s.version=2;delete s.travel;delete s.visits;delete s.cookedKinds;localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
   await waitForGame();
-  assert((await evalJs('SrokGame.getState().version'))===10,'Existing save migration failed');
+  assert((await evalJs('SrokGame.getState().version'))===11,'Existing save migration failed');
   assert((await evalJs('SrokGame.getState().profileName'))==='Sokha','Player profile was lost during migration');
   assert((await evalJs('SrokGame.getState().inventory.rice'))===2,'Existing inventory was lost');
   await evalJs(`(()=>{const s=SrokGame.getState();s.chapter=4;s.decor=['flowers','lanterns','boat'];s.coins=250;localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
@@ -81,6 +91,9 @@ try {
   await evalJs(`(()=>{const s=SrokGame.getState();s.inventory.pepper=2;s.inventory.crab=1;localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
   await waitForGame();
   await evalJs("SrokGame.act('cook','pepper_crab')");
+  assert((await evalJs('SrokGame.getState().kitchenQueue.length'))===1,'Cooking queue did not start');
+  await evalJs('Date.now=()=>new Date().getTime()+200000');
+  await evalJs("SrokGame.act('collectCook','0')");
   assert((await evalJs('SrokGame.getState().cookedKinds.pepper_crab'))===1,'Regional recipe failed');
   await evalJs(`(()=>{const s=SrokGame.getState();s.journeyChapter=3;s.visits={tonle_sap:2,kep:2,kampong_speu:2,mondulkiri:2};s.stats.trips=8;localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
   await waitForGame();
@@ -101,14 +114,16 @@ try {
   assert((await evalJs('SrokGame.getState().travel.at-Date.now()'))<54000,'Travel cart upgrade failed');
   const porridgeBefore=await evalJs('SrokGame.getState().inventory.porridge || 0');
   await evalJs("SrokGame.act('upgrade','stove'); SrokGame.act('cook','porridge')");
+  await evalJs('Date.now=()=>new Date().getTime()+200000');
+  await evalJs("SrokGame.act('collectCook','0')");
   assert((await evalJs('SrokGame.getState().inventory.porridge'))===porridgeBefore+2,'Clay stove upgrade failed');
   await evalJs(`(()=>{const s=SrokGame.getState();s.version=3;s.coins=1000;s.xp=650;s.inventory.rice=8;s.inventory.fish=3;s.plots=s.plots.slice(0,12);delete s.workshop;delete s.craftedKinds;delete s.friendship;delete s.giftAt;delete s.makersChapter;localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
   await waitForGame();
-  assert((await evalJs('SrokGame.getState().version'))===10,'Version 1.1 save migration failed');
+  assert((await evalJs('SrokGame.getState().version'))===11,'Version 1.1 save migration failed');
   await evalJs("SrokGame.act('expand'); SrokGame.act('expand')");
   assert((await evalJs('SrokGame.getState().plots.length'))===20,'Field expansion failed');
   await evalJs("SrokGame.act('craft','rice_flour')");
-  assert((await evalJs('SrokGame.getState().workshop.id'))==='rice_flour','Workshop start failed');
+  assert((await evalJs('SrokGame.getState().workshopQueue[0].id'))==='rice_flour','Workshop start failed');
   await evalJs('Date.now=()=>new Date().getTime()+50000');
   await evalJs("SrokGame.act('collectCraft')");
   assert((await evalJs('SrokGame.getState().craftedKinds.rice_flour'))===1,'Workshop collection failed');
@@ -154,7 +169,7 @@ try {
   assert((await evalJs('SrokGame.getState().stats.miniGames'))===1,'Rice sorting completion not recorded');
   await evalJs("SrokGame.act('close'); SrokGame.act('openMini','rice')");
   assert((await evalJs('document.querySelector(".mini-rice-grid")===null')),'Rice sorting cooldown failed');
-  await evalJs(`(()=>{const s=SrokGame.getState();s.inventory.cotton=3;s.workshop=null;localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
+  await evalJs(`(()=>{const s=SrokGame.getState();s.inventory.cotton=3;s.workshopQueue=[];localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
   await waitForGame();
   const kramaBefore=await evalJs('SrokGame.getState().inventory.krama || 0');
   await evalJs("SrokGame.act('tab','kitchen'); SrokGame.act('kitchenMode','workshop'); SrokGame.act('openMini','loom')");
@@ -245,7 +260,37 @@ try {
   await evalJs('Date.now=()=>new Date().getTime()+40000');
   await evalJs("SrokGame.act('harvestReady')");
   assert((await evalJs('SrokGame.getState().stats.harvest'))>=quickHarvestBefore+4,'Ready field harvest did not collect the batch');
-  console.log('PASS: dashboard, profile, map, migration, quick farming, journeys, workshop, animal care, item-earning fishing, seven hub games, six properties, batch sales, save recovery, three endings');
+  await evalJs("SrokGame.act('tab','orders')");
+  assert(await evalJs('!!document.querySelector(".order-card .item-main b") && !document.querySelector(".order-card .item-main b").textContent.includes("#")'),'Named villager orders missing');
+  await evalJs("SrokGame.act('tab','market'); SrokGame.act('marketMode','storage')");
+  assert(await evalJs('!!document.querySelector(".storage-grid .storage-item")'),'Visual storage missing');
+  await evalJs("SrokGame.act('storageFilter','crops')");
+  assert(await evalJs('[...document.querySelectorAll(".storage-item b")].every(el=>!el.textContent.includes("Fish"))'),'Storage category filter failed');
+  await evalJs(`(()=>{const s=SrokGame.getState();s.xp=900;s.buffalo=true;s.inventory.rice=12;s.inventory.fish=4;s.inventory.banana=4;s.inventory.egg=3;s.inventory.cotton=6;s.kitchenQueue=[];s.workshopQueue=[];s.miniAt.buffalo=0;localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
+  await waitForGame();
+  await evalJs("SrokGame.act('cook','porridge'); SrokGame.act('cook','banana_cake'); SrokGame.act('cook','porridge'); SrokGame.act('craft','rice_flour'); SrokGame.act('craft','krama'); SrokGame.act('craft','rice_flour')");
+  assert((await evalJs('SrokGame.getState().kitchenQueue.length'))===2,'Kitchen did not enforce two queue slots');
+  assert((await evalJs('SrokGame.getState().workshopQueue.length'))===2,'Workshop did not enforce two queue slots');
+  await evalJs('location.reload()');await waitForGame();
+  assert((await evalJs('SrokGame.getState().kitchenQueue.length'))===2,'Kitchen queue did not survive restart');
+  await evalJs('Date.now=()=>new Date().getTime()+200000');
+  await evalJs("SrokGame.act('collectCook','1'); SrokGame.act('collectCook','0'); SrokGame.act('collectCraft','1'); SrokGame.act('collectCraft','0')");
+  assert((await evalJs('SrokGame.getState().kitchenQueue.length+SrokGame.getState().workshopQueue.length'))===0,'Finished queues did not collect');
+  assert((await evalJs('SrokGame.getState().inventory.krama || 0'))>=1,'Queued krama reward missing');
+  await evalJs(`(()=>{const s=SrokGame.getState();s.version=10;delete s.workshopQueue;s.workshop={id:'krama',at:Date.now()+60000};localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
+  await waitForGame();
+  assert((await evalJs('SrokGame.getState().workshopQueue[0].id'))==='krama','Legacy workshop job migration failed');
+  await evalJs(`(()=>{const s=SrokGame.getState();s.version=10;delete s.workshopQueue;s.workshop={id:'rice_flour',at:Date.now()+60000};localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
+  await waitForGame();
+  assert((await evalJs('SrokGame.getState().workshopQueue[0].amount'))===2,'Legacy rice mill output bonus was lost');
+  await evalJs(`(()=>{const s=SrokGame.getState();s.workshopQueue=[];s.miniAt.buffalo=0;localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
+  await waitForGame();
+  const milkBefore=await evalJs('SrokGame.getState().inventory.milk || 0');
+  await evalJs("SrokGame.act('farmMode','games'); SrokGame.act('openMini','buffalo'); document.querySelector('.mini-care-tool[data-id=dry]').click()");
+  for(const id of ['brush','rinse','dry'])await evalJs(`document.querySelector('.mini-care-tool[data-id=${id}]').click()`);
+  assert((await evalJs('SrokGame.getState().inventory.milk || 0'))===milkBefore+1,'Buffalo Bath did not award an item');
+  assert((await evalJs('SrokGame.getState().miniBest.buffalo'))>=1,'Buffalo Bath rating was not saved');
+  console.log('PASS: v2 dashboard, profile, named orders, storage, two queues, legacy migration, nine item-earning mini games, farming, journeys, property, save recovery, three endings');
 } finally {
   if(ws)ws.close();
   processChrome.kill();

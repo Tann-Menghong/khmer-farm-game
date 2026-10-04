@@ -1,8 +1,8 @@
 ﻿{
-    "versionCode":  12,
-    "versionName":  "1.9.0",
-    "apkUrl":  "https://raw.githubusercontent.com/Tann-Menghong/khmer-farm-game/main/releases/srok-srae-v1.9.0-release.apk",
-    "apkSize":  4445526,
-    "sha256":  "67c51b00b09a5b11f949cc26964f254bce5051d0f18d8fd754f1afd97fc07950",
-    "notes":  "New farm dashboard with live crop, order and inventory counts; saved player profile with original portrait; illustrated Cambodian village map; compact dashboard grids for orders, recipes, journeys, market and properties; one tap planting and harvesting; refreshed gradients and phone layout; safe migration of existing progress."
+    "versionCode":  13,
+    "versionName":  "2.0.0",
+    "apkUrl":  "https://raw.githubusercontent.com/Tann-Menghong/khmer-farm-game/main/releases/srok-srae-v2.0.0-release.apk",
+    "apkSize":  5090389,
+    "sha256":  "6010ff7c0da563ff11b5db8ed35c6828df2149c38587d1ebc324148bd6d0dfbd",
+    "notes":  "Living Village: named neighbor orders, visual searchable storage, two-slot kitchen and workshop production, three farmer portraits and farm naming, Buffalo Bath item-earning mini-game, five growth-stage illustrations for four crops, and safe migration of existing saves."
 }

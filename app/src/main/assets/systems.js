@@ -26,5 +26,11 @@
       .slice(0,2).map(job=>({id:job.id,at:Number(job.at),amount:Math.max(1,Math.min(2,Number(job.amount)||1))}));
   }
   function cookingSeconds(level) { return 20+Math.max(1,Number(level)||1)*7; }
-  window.SrokSystems={neighbors,categories,orderNeighbor,category,uses,validJobs,cookingSeconds};
+  const demandPool=['rice','fish','banana','mango','lotus','coconut','corn','krama','rice_flour'];
+  function marketDemand(day) {
+    const offset=Math.abs(Math.floor(Number(day)||0))%demandPool.length;
+    return [0,3,6].map((step,i)=>({id:demandPool[(offset+step)%demandPool.length],bonus:[20,15,10][i]}));
+  }
+  function demandBonus(id,day) { return marketDemand(day).find(entry=>entry.id===id)?.bonus||0; }
+  window.SrokSystems={neighbors,categories,orderNeighbor,category,uses,validJobs,cookingSeconds,marketDemand,demandBonus};
 })();

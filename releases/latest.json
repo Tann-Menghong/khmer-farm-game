@@ -1,8 +1,8 @@
 {
-    "versionCode":  13,
-    "versionName":  "2.0.0",
-    "apkUrl":  "https://raw.githubusercontent.com/Tann-Menghong/khmer-farm-game/main/releases/srok-srae-v2.0.0-release.apk",
-    "apkSize":  5090389,
-    "sha256":  "6010ff7c0da563ff11b5db8ed35c6828df2149c38587d1ebc324148bd6d0dfbd",
-    "notes":  "Living Village: named neighbor orders, visual searchable storage, two-slot kitchen and workshop production, three farmer portraits and farm naming, Buffalo Bath item-earning mini-game, five growth-stage illustrations for four crops, and safe migration of existing saves."
+    "versionCode":  14,
+    "versionName":  "2.1.0",
+    "apkUrl":  "https://raw.githubusercontent.com/Tann-Menghong/khmer-farm-game/main/releases/srok-srae-v2.1.0-release.apk",
+    "apkSize":  5473980,
+    "sha256":  "6c23935ff157511ede44b16f04ac07496c899936e41f6af7a3b60cf951f199a0",
+    "notes":  "Growing Village: levels 8–10, Fruit Harvest item-earning game, orchard/river boat/community hall with lasting benefits and illustrated map art, daily market demand bonuses, and village prosperity. Core gameplay and old saves remain offline-compatible."
 }

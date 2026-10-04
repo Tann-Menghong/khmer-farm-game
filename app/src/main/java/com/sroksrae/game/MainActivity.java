@@ -18,8 +18,8 @@ public class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setStatusBarColor(0xff245d53);
-        getWindow().setNavigationBarColor(0xff245d53);
+        getWindow().setStatusBarColor(0xff155d58);
+        getWindow().setNavigationBarColor(0xff155d58);
         game = new WebView(this);
         if (android.os.Build.VERSION.SDK_INT < 29) game.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         game.setBackgroundColor(0xffe9d7ae);

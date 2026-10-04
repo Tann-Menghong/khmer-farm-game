@@ -34,6 +34,10 @@ try {
   await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=reject;});
   ws.onmessage=e=>{const msg=JSON.parse(e.data);if(!msg.id)return;const p=pending.get(msg.id);if(p){pending.delete(msg.id);p.resolve(msg);}};
   await waitForGame();
+  assert(await evalJs('!!document.querySelector(".dashboard-overview")'),'Farm dashboard missing');
+  assert(await evalJs('getComputedStyle(document.querySelector("#map-world")).backgroundImage.includes("village-map-ground.webp")'),'Illustrated village map missing');
+  await evalJs("SrokGame.act('profile'); document.querySelector('#profile-name').value='Sokha'; SrokGame.act('saveProfile')");
+  assert((await evalJs('SrokGame.getState().profileName'))==='Sokha','Player profile was not saved');
   await evalJs("SrokGame.act('startTutorial')");
   assert((await evalJs('SrokGame.getState().tutorialStep'))===1,'Guided tutorial did not start');
   assert(await evalJs('!!document.querySelector("#farm-map .map-plot")'),'Farm map did not render');
@@ -58,7 +62,8 @@ try {
   assert((await evalJs('SrokGame.getState().inventory.fish'))===startingFish+1,'Fishing failed');
   await evalJs(`(()=>{const s=SrokGame.getState();s.version=2;delete s.travel;delete s.visits;delete s.cookedKinds;localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
   await waitForGame();
-  assert((await evalJs('SrokGame.getState().version'))===9,'Existing save migration failed');
+  assert((await evalJs('SrokGame.getState().version'))===10,'Existing save migration failed');
+  assert((await evalJs('SrokGame.getState().profileName'))==='Sokha','Player profile was lost during migration');
   assert((await evalJs('SrokGame.getState().inventory.rice'))===2,'Existing inventory was lost');
   await evalJs(`(()=>{const s=SrokGame.getState();s.chapter=4;s.decor=['flowers','lanterns','boat'];s.coins=250;localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
   await waitForGame();
@@ -99,7 +104,7 @@ try {
   assert((await evalJs('SrokGame.getState().inventory.porridge'))===porridgeBefore+2,'Clay stove upgrade failed');
   await evalJs(`(()=>{const s=SrokGame.getState();s.version=3;s.coins=1000;s.xp=650;s.inventory.rice=8;s.inventory.fish=3;s.plots=s.plots.slice(0,12);delete s.workshop;delete s.craftedKinds;delete s.friendship;delete s.giftAt;delete s.makersChapter;localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
   await waitForGame();
-  assert((await evalJs('SrokGame.getState().version'))===9,'Version 1.1 save migration failed');
+  assert((await evalJs('SrokGame.getState().version'))===10,'Version 1.1 save migration failed');
   await evalJs("SrokGame.act('expand'); SrokGame.act('expand')");
   assert((await evalJs('SrokGame.getState().plots.length'))===20,'Field expansion failed');
   await evalJs("SrokGame.act('craft','rice_flour')");
@@ -232,7 +237,15 @@ try {
   await evalJs("SrokGame.act('sellQty','all')");
   assert((await evalJs('SrokGame.getState().inventory.rice || 0'))===0,'Batch sale did not clear stock');
   assert(marketRice>0,'No rice available for market test');
-  console.log('PASS: migration, farming, journeys, workshop, animal care, item-earning fishing, seven hub games, six properties, batch sales, save recovery, three endings');
+  await evalJs(`(()=>{const s=SrokGame.getState();s.tutorialStep=0;s.selected='rice';s.plots=[null,null,null,null,...s.plots.slice(4)];localStorage.setItem('srok-srae-save-v2',JSON.stringify(s));location.reload()})()`);
+  await waitForGame();
+  await evalJs("SrokGame.act('farmMode','fields'); SrokGame.act('plantBatch')");
+  assert((await evalJs('SrokGame.getState().plots.slice(0,4).filter(Boolean).length'))===4,'Quick planting did not fill four fields');
+  const quickHarvestBefore=await evalJs('SrokGame.getState().stats.harvest');
+  await evalJs('Date.now=()=>new Date().getTime()+40000');
+  await evalJs("SrokGame.act('harvestReady')");
+  assert((await evalJs('SrokGame.getState().stats.harvest'))>=quickHarvestBefore+4,'Ready field harvest did not collect the batch');
+  console.log('PASS: dashboard, profile, map, migration, quick farming, journeys, workshop, animal care, item-earning fishing, seven hub games, six properties, batch sales, save recovery, three endings');
 } finally {
   if(ws)ws.close();
   processChrome.kill();

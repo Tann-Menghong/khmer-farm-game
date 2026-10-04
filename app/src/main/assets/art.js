@@ -28,7 +28,7 @@
   entries.net = entries.fish_pond;
   entries.cart = entries.river_landing;
   entries.stove = entries.cooking_house;
-  const standalone = {family_home:'art/family-home.webp',produce_truck:'art/produce-truck.webp',produce_motorbike:'art/produce-motorbike.webp'};
+  const standalone = {family_home:'art/family-home.webp',produce_truck:'art/produce-truck.webp',produce_motorbike:'art/produce-motorbike.webp',farmer_profile:'art/farmer-profile.webp'};
 
   function sprite(id, className='') {
     if(standalone[id])return `<img class="art-image ${className}" src="${standalone[id]}" alt="" loading="lazy" decoding="async">`;

@@ -17,7 +17,7 @@ Core gameplay, including all nine mini-games, remains offline. Named orders and 
 
 ## Verification
 
-`node scripts/smoke-test.mjs` checks the farming and story regressions, crop image decoding and stage changes, profile, queues, old workshop-job migration, storage filters, and the ninth mini-game reward. `node scripts/capture-v2.mjs` creates phone-size English and Khmer previews in `qa/`. The release APK is built with Gradle and verified with Android's signing tool and an emulator install-over check.
+`node scripts/smoke-test.mjs` checks the farming and story regressions, crop image decoding and stage changes, profile, queues, old workshop-job migration, storage filters, and the ninth mini-game reward. `node scripts/capture-v2.mjs` creates phone-size English and Khmer previews in `qa/`. The release APK is built with Gradle and verified with Android's signing tool. On the emulator, v1.9.0 detected v2.0.0, downloaded and verified the APK, requested Android installation approval, installed over v1.9.0, and launched v2.0.0.
 
 ## Remaining work
 

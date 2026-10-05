@@ -1,6 +1,6 @@
 # ស្រុកស្រែ • Srok Srae
 
-An original offline Cambodian village farming game for Android, with three story campaigns and three endings. The [major update plan](docs/MAJOR_UPDATE_PLAN.md) distinguishes shipped features from future work. The [v2.1.0 update guide](docs/UPDATE_V2_1.md) documents the Growing Village release.
+An original offline Cambodian village farming game for Android, with three story campaigns and three endings. The [major update plan](docs/MAJOR_UPDATE_PLAN.md) distinguishes shipped features from future work. The [v2.2.0 update guide](docs/UPDATE_V2_2.md) documents the Village Neighbors release.
 
 [Preview the game](preview.png)
 
@@ -16,28 +16,28 @@ An original offline Cambodian village farming game for Android, with three story
 8. Expand the farm from 12 to 20 plots. Grow cotton, make rice flour, lotus garlands, woven krama, and palm sugar candy in the workshop.
 9. Give favorite items to four village neighbors. Friendship earns rewards and helps open the makers fair.
 10. Tap buildings on the map for fishing, animals, cooking, weaving, orders, trading, and regional journeys. Buy decorations in the Journal, then tap Arrange on the map to move them.
-11. Open Farm → Games to play ten item earning activities: sort rice, reel in fish, find pond pairs, guide water, weave a krama, pack market baskets, load a boat, finish a recipe, care for a water buffalo, and harvest fruit. Each awards useful goods or coins, XP, and a saved best rating.
+11. Open Farm → Games to play eleven item earning activities: sort rice, reel in fish, find pond pairs, guide water, weave a krama, pack market baskets, load a boat, finish a recipe, care for a water buffalo, harvest fruit, and mill rice. Each awards useful goods or coins, XP, and a saved best rating.
 12. Earn coins through farming, orders, and trade. Buy a grain store, rice mill, family home, market stall, produce motorbike, produce truck, fruit orchard, river boat, and community hall for production, harvest, journey, order, and sale bonuses. Sell goods in batches of one, five, or all.
 13. Use the Farm dashboard to see ready crops, orders, and stocked goods. Tap the avatar to choose an illustrated farmer portrait, name your farm and village, and see the next level's unlocks.
-14. Use the market's Storage tab to search and filter goods. The market also highlights three daily demand goods with modest sale bonuses. The kitchen and workshop each have two timed production slots.
+14. Use the market's Storage tab to search and filter goods. The market also highlights three daily demand goods with modest sale bonuses. The kitchen and workshop each have two timed production slots and can collect all finished products at once. Tap the neighbors visible on the map to give them favorite gifts.
 
-The game has an interactive isometric village map, a farm dashboard, an editable player profile, ten levels, sixteen crops, thirteen cooking recipes, four workshop crafts, four travel destinations, four permanent upgrades, nine earnable property purchases, three animal or fishing stations, ten mini games, named village orders, four friends, movable decorations, achievements, English and Khmer controls, graphics and reduced motion settings, a help screen, and automatic local saves with backup recovery. Farming needs no internet connection or account. Version 2.1.0 reads and upgrades earlier local saves.
+The game has an interactive isometric village map, a farm dashboard, an editable player profile, ten levels, sixteen crops, thirteen cooking recipes, four workshop crafts, four travel destinations, four permanent upgrades, nine earnable property purchases, three animal or fishing stations, eleven mini games, named village orders, four friends, movable decorations, achievements, English and Khmer controls, graphics and reduced motion settings, a help screen, and automatic local saves with backup recovery. Farming needs no internet connection or account. Version 2.2.0 reads and upgrades earlier local saves.
 
-The art includes five original illustrated WebP atlases, thirteen standalone HD illustrations, and twenty growth-stage images for four crops, with source PNGs in `art-source/`. Some secondary labels and effects still use Unicode symbols and need a final art pass. Recipes use simplified game ingredients. Cambodian cultural names and Khmer copy should be reviewed with Cambodian players before wider release. Smooth 60 FPS is a target on suitable devices, not yet a measured device guarantee.
+The art includes five original illustrated WebP atlases, fourteen standalone HD illustrations, and twenty growth-stage images for four crops, with source PNGs in `art-source/`. Some secondary labels and effects still use Unicode symbols and need a final art pass. Recipes use simplified game ingredients. Cambodian cultural names and Khmer copy should be reviewed with Cambodian players before wider release. Smooth 60 FPS is a target on suitable devices, not yet a measured device guarantee.
 
 ## Install the release APK
 
-Download the [Srok Srae 2.1.0 APK](https://github.com/Tann-Menghong/khmer-farm-game/releases/download/v2.1.0/srok-srae-v2.1.0-release.apk) to an Android phone and open it, or use Android Debug Bridge. See the [v2.1.0 release notes](https://github.com/Tann-Menghong/khmer-farm-game/releases/tag/v2.1.0).
+Download the [Srok Srae 2.2.0 APK](https://github.com/Tann-Menghong/khmer-farm-game/releases/download/v2.2.0/srok-srae-v2.2.0-release.apk) to an Android phone and open it, or use Android Debug Bridge. See the [v2.2.0 release notes](https://github.com/Tann-Menghong/khmer-farm-game/releases/tag/v2.2.0).
 
 ```powershell
-adb install -r releases/srok-srae-v2.1.0-release.apk
+adb install -r releases/srok-srae-v2.2.0-release.apk
 ```
 
 This is a non-debuggable release build signed with the local prototype certificate. The signature was verified, but installation over an existing APK requires that the existing APK was signed with the same certificate. Google Play publication requires a protected production signing plan, store listing, device testing, and final cultural and language review.
 
 ## In-app updates
 
-When online, the app checks the public [release manifest](releases/latest.json) at launch at most once per day. You can also use **Settings → Check**. If a newer published version is listed, the app shows release notes and size when provided, then downloads only after player action. Progress, cancel, retry and SHA-256 verification precede Android's installer. Android asks the player to approve installation and may require allowing installs from Srok Srae. The game itself remains playable offline. The v2.1.0 manifest points to the release APK and its verified hash.
+When online, the app checks the public [release manifest](releases/latest.json) at launch at most once per day. You can also use **Settings → Check**. If a newer published version is listed, the app shows release notes and size when provided, then downloads only after player action. Progress, cancel, retry and SHA-256 verification precede Android's installer. Android asks the player to approve installation and may require allowing installs from Srok Srae. The game itself remains playable offline. The v2.2.0 manifest points to the release APK and its verified hash.
 
 To publish a later update, increase `versionCode` and `versionName`, build a new APK with the **same signing key**, copy it into `releases/`, then update `releases/latest.json` with its URL and SHA-256 hash before pushing. These prototype APKs use the local Android debug key; APKs built with a different key cannot update this installation. The public GitHub repository hosts the update files, so a private repository would require a different update server.
 
@@ -50,7 +50,7 @@ Open the folder in Android Studio and build the `app` module, or use JDK 17 and 
 node scripts/smoke-test.mjs
 ```
 
-The smoke test uses locally installed Google Chrome and checks the dashboard, profile, crop art and growth stages, quick farming, item earning fishing, animal care, all ten mini games, property purchases and benefits, daily demand, batch sales, production queues, old-save migration and recovery, all three endings, the daily gift, travel, regional cooking, all four upgrades, workshop crafting, friendships, and land expansion. `node scripts/capture-v2-1.mjs` saves English and Khmer phone previews. The v2.1.0 APK installed over v2.0.0 in an Android emulator; a physical device still needs verification.
+The smoke test uses locally installed Google Chrome and checks the dashboard, profile, crop art and growth stages, quick farming, item earning fishing, animal care, all eleven mini games, property purchases and benefits, daily demand, batch sales, production queues and collect all, old-save migration and recovery, all three endings, the daily gift, travel, regional cooking, all four upgrades, workshop crafting, map friendship gifts, and land expansion. `node scripts/capture-v2-2.mjs` saves English and Khmer phone previews. The v2.2.0 APK installed over v2.1.0 in an Android emulator; a physical device still needs verification.
 
 Regional themes were checked against Cambodia's Ministry of Tourism material on [Tonle Sap](https://tourismcambodia.org/public/provinces/search/detail/389/phnom-krom-tonle-sap-lake), [Kep seafood and Kampot pepper](https://www.tourismcambodia.org/public/index.php/official-activities/new-beginnings-a-gourmet-guide-to-cambodia), and [regional products including Kampong Speu palm sugar and Koh Trong pomelos](https://www.tourismcambodia.org/public/index.php/official-activities/nom-banh-chok-siem-reap-set-for-trademark-by-ministry). Game recipes use simplified ingredients.
 

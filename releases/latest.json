@@ -1,8 +1,8 @@
 {
-    "versionCode":  14,
-    "versionName":  "2.1.0",
-    "apkUrl":  "https://raw.githubusercontent.com/Tann-Menghong/khmer-farm-game/main/releases/srok-srae-v2.1.0-release.apk",
-    "apkSize":  5473980,
-    "sha256":  "6c23935ff157511ede44b16f04ac07496c899936e41f6af7a3b60cf951f199a0",
-    "notes":  "Growing Village: levels 8–10, Fruit Harvest item-earning game, orchard/river boat/community hall with lasting benefits and illustrated map art, daily market demand bonuses, and village prosperity. Core gameplay and old saves remain offline-compatible."
+    "versionCode":  15,
+    "versionName":  "2.2.0",
+    "apkUrl":  "https://raw.githubusercontent.com/Tann-Menghong/khmer-farm-game/main/releases/srok-srae-v2.2.0-release.apk",
+    "apkSize":  5604114,
+    "sha256":  "97c87b195993136cb12103fe1013b1ebcc8f6ae48225a96a58013fd7e2db8ee2",
+    "notes":  "Village Neighbors: an item-earning Rice Mill challenge, original mill art, tappable village friends, ready-action Farm shortcuts, clearer seed cards, and one-tap collection of finished kitchen and workshop goods. Offline play and older saves remain supported."
 }

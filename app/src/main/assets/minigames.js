@@ -21,6 +21,10 @@
   function fruitRound(session) {
     session.board=shuffle(['mango','banana','banana']);
   }
+  function millRound(session) {
+    session.target=5+pick(4);
+    session.load=0;
+  }
   function cargoRound(session) {
     session.target=5+pick(4);
     session.load=0;
@@ -62,6 +66,8 @@
       session.options=shuffle(session.care);
     } else if(id==='fruit') {
       fruitRound(session);
+    } else if(id==='mill') {
+      millRound(session);
     } else return null;
     return session;
   }
@@ -135,6 +141,12 @@
       if(!Number.isInteger(index)||index<0||index>=session.board.length)return {correct:false,finished:false};
       correct=session.board[index]==='mango';
       if(correct){session.round++;if(session.round<3)fruitRound(session);}
+    } else if(session.id==='mill') {
+      const amount=Number(value);
+      if(!Number.isInteger(amount)||amount<1||amount>3)return {correct:false,finished:false};
+      correct=session.load+amount<=session.target;
+      session.load=correct?session.load+amount:0;
+      if(session.load===session.target){session.round++;if(session.round<3)millRound(session);}
     }
     if(!correct && session.id!=='canal' && !(session.id==='lotus'&&session.open.length===1))session.mistakes++;
     session.finished=session.round===(session.id==='loom'||session.id==='canal'?4:3);

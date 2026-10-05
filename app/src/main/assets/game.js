@@ -109,16 +109,16 @@
     {en:'Village festival',km:'បុណ្យភូមិ',npc:'🎊',speaker:'The village',text:'Decorate the village and save 200 coins to host the festival.',textKm:'តុបតែងភូមិ និងសន្សំ ២០០ កាក់ ដើម្បីរៀបចំពិធីបុណ្យ។',goals:[['decor',3],['coins',200]],reward:0}
   ];
   const ALL = [...CROPS,...GOODS,...RECIPES,...CRAFTS];
-  const MINI_IDS = ['rice','fish','lotus','canal','loom','market','cargo','recipe','buffalo','fruit'];
+  const MINI_IDS = ['rice','fish','lotus','canal','loom','market','cargo','recipe','buffalo','fruit','mill'];
   const BY_ID = {};
   ALL.forEach(x => { BY_ID[x.id] = x; });
   const XP_LEVELS = [0,0,35,100,210,370,600,900,1220,1580,1990];
   const app = document.getElementById('app');
   const modalRoot = document.getElementById('modal-root');
   const toastEl = document.getElementById('toast');
-  let tab = 'farm', kitchenMode='cook', farmMode='map', villageMode='build', marketMode='sell', storageFilter='all', storageSearch='', marketShowAll=false, arranging=false, selectedDecor='', pendingPlot=-1, pendingAnimal='', pendingSale='', fishingCastAt=0, miniSession=null, mapMoved=false, mapFrame=0, recoveredSave=false, modal = '', toastTimer, audio;
+  let tab = 'farm', kitchenMode='cook', farmMode='map', villageMode='build', marketMode='sell', storageFilter='all', storageSearch='', marketShowAll=false, arranging=false, selectedDecor='', pendingPlot=-1, pendingAnimal='', pendingSale='', pendingFriend='', fishingCastAt=0, miniSession=null, mapMoved=false, mapFrame=0, recoveredSave=false, modal = '', toastTimer, audio;
 
-  const freshState = () => ({version:12,profileName:'Village farmer',farmName:'Family farm',villageName:'Our village',avatarId:'farmer_profile',coins:80,xp:0,plots:Array(12).fill(null),inventory:{},selected:'rice',fishAt:0,coopAt:0,buffaloAt:0,animalCare:{chicken:0,buffalo:0},miniAt:{rice:0,loom:0,market:0,lotus:0,canal:0,cargo:0,recipe:0,buffalo:0,fruit:0},miniBest:{},mapCamera:{x:0,y:0,zoom:1},decorPositions:{},ownedProperty:[],reducedMotion:false,graphics:'auto',
+  const freshState = () => ({version:13,profileName:'Village farmer',farmName:'Family farm',villageName:'Our village',avatarId:'farmer_profile',coins:80,xp:0,plots:Array(12).fill(null),inventory:{},selected:'rice',fishAt:0,coopAt:0,buffaloAt:0,animalCare:{chicken:0,buffalo:0},miniAt:{rice:0,loom:0,market:0,lotus:0,canal:0,cargo:0,recipe:0,buffalo:0,fruit:0,mill:0},miniBest:{},mapCamera:{x:0,y:0,zoom:1},decorPositions:{},ownedProperty:[],reducedMotion:false,graphics:'auto',
     chicken:false,buffalo:false,chapter:0,won:false,stats:{harvest:0,fish:0,orders:0,cooked:0,eggs:0,milk:0,earned:0,trips:0,crafted:0,gifts:0,miniGames:0,propertySpent:0},
     orders:[],nextOrderId:1,decor:[],upgrades:[],sound:true,lang:'en',seenHelp:false,tutorialStep:0,travel:null,visits:{},cookedKinds:{},journeyChapter:0,journeyWon:false,lastDaily:'',kitchenQueue:[],workshopQueue:[],craftedKinds:{},friendship:{},friendRewards:{},giftAt:{},makersChapter:0,makersWon:false});
   function normalizeProfileName(value) {
@@ -131,10 +131,10 @@
     try {
       const result = SrokSave.load(SAVE_KEY), raw=result.state;
       recoveredSave=result.recovered;
-      if (!raw || ![2,3,4,5,6,7,8,9,10,11,12].includes(raw.version)) return freshState();
+      if (!raw || ![2,3,4,5,6,7,8,9,10,11,12,13].includes(raw.version)) return freshState();
       const s = freshState();
       Object.assign(s,raw);
-      s.version=12;
+      s.version=13;
       s.profileName=normalizeProfileName(raw.profileName);
       s.farmName=normalizeProfileName(raw.farmName||'Family farm');
       s.villageName=normalizeProfileName(raw.villageName||'Our village');
@@ -149,7 +149,7 @@
       s.mapCamera=raw.mapCamera && typeof raw.mapCamera==='object' ? raw.mapCamera : {x:0,y:0,zoom:1};
       s.decorPositions=raw.decorPositions && typeof raw.decorPositions==='object' ? raw.decorPositions : {};
       s.animalCare=Object.assign({chicken:0,buffalo:0},raw.animalCare||{});
-      s.miniAt={rice:0,loom:0,market:0,lotus:0,canal:0,cargo:0,recipe:0,buffalo:0,fruit:0};
+      s.miniAt={rice:0,loom:0,market:0,lotus:0,canal:0,cargo:0,recipe:0,buffalo:0,fruit:0,mill:0};
       for(const key of Object.keys(s.miniAt))s.miniAt[key]=Math.max(0,Number(raw.miniAt&&raw.miniAt[key])||0);
       s.miniBest={};
       for(const id of MINI_IDS)s.miniBest[id]=Math.min(3,Math.max(0,Number(raw.miniBest&&raw.miniBest[id])||0));
@@ -317,9 +317,11 @@
   }
   const mapPlotPosition = i => ({x:244+(i%5)*92+(Math.floor(i/5)%2)*18,y:278+Math.floor(i/5)*56+(i%5)*8});
   const decorDefaults={flowers:{x:120,y:126},lanterns:{x:635,y:132},boat:{x:688,y:396}};
+  const visitorPositions={dara:{x:159,y:396},srey_mom:{x:401,y:190},ta_sok:{x:108,y:223},vanna:{x:674,y:174}};
   function renderMap() {
     const tutorialPlot=state.plots.findIndex(plot=>!plot);
     const station=(key,x,y,icon,en,km,action,extra='')=>`<button class="map-station ${extra}" style="left:${x}px;top:${y}px" data-action="${action}" data-id="${key}" aria-label="${L(en,km)}">${art(key==='market'&&hasProperty('market_stall')?'market_stall':key==='explore'&&hasProperty('river_boat')?'river_boat':key)}<b>${L(en,km)}</b></button>`;
+    const visitors=[FRIENDS[marketDay()%FRIENDS.length],FRIENDS[(marketDay()+2)%FRIENDS.length]];
     return `<div class="map-shell"><div class="map-toolbar"><strong>${art('farm_nav')} ${L('Village','ភូមិ')} · ${name(weather())}</strong><div><button class="map-tool ${arranging?'active':''}" data-action="arrange">${arranging?L('DONE','រួចរាល់'):L('ARRANGE','តុបតែង')}</button><button class="map-tool" data-action="mapZoom" data-id="out" aria-label="Zoom out">−</button><button class="map-tool" data-action="mapZoom" data-id="in" aria-label="Zoom in">+</button></div></div>
       <div class="map-viewport ${arranging?'arranging':''} ${selectedDecor?'placement-active':''}" id="farm-map" role="region" aria-label="${L('Interactive farm map','ផែនទីកសិដ្ឋាន')}" tabindex="0"><div class="map-world" id="map-world">
         <div class="map-river"></div><div class="map-road road-a"></div><div class="map-road road-b"></div><div class="map-paddy paddy-a"></div><div class="map-paddy paddy-b"></div>
@@ -340,12 +342,13 @@
         ${station('market',805,455,'🧺','Market','ផ្សារ','marketTab')}
         ${station('orders',523,90,'📋','Orders','កម្ម៉ង់','ordersTab')}
         ${station('explore',82,486,'🚣','Explore','ដំណើរ','exploreTab')}
+        ${visitors.map(friend=>{const p=visitorPositions[friend.id],short=state.lang==='km'?friend.km.split(' ')[0]:friend.en.split(' ')[0];return `<button class="map-visitor" style="left:${p.x}px;top:${p.y}px" data-action="neighbor" data-id="${friend.id}" aria-label="${L('Visit','ជួប')} ${name(friend)}">${art(friend.id)}<b>${short}</b></button>`;}).join('')}
         ${state.decor.map(id=>{const d=DECOR.find(item=>item.id===id),p=state.decorPositions[id]||decorDefaults[id];return d?`<button class="map-decoration ${selectedDecor===id?'selected':''}" style="left:${p.x}px;top:${p.y}px" data-action="mapDecor" data-id="${id}" aria-label="${name(d)}">${art(id==='boat'?'boat_decor':id)}</button>`:'';}).join('')}
         ${state.journeyWon?`<div class="map-flag" style="left:443px;top:73px">${art('festival_lanterns')}</div>`:''}${state.makersWon?`<div class="map-flag" style="left:782px;top:73px">${art('krama')}</div>`:''}
       </div></div><p class="map-hint">${arranging?(selectedDecor?L('Tap the ground to place your decoration.','ចុចលើដីដើម្បីដាក់គ្រឿងតុបតែង។'):L('Tap a decoration, then tap a new place.','ចុចគ្រឿងតុបតែង រួចចុចទីតាំងថ្មី។')):L('Drag to move • tap a field or building • use + and − to zoom','អូសដើម្បីផ្លាស់ទី • ចុចស្រែ ឬអគារ • ប្រើ + និង − ដើម្បីពង្រីក')}</p></div>`;
   }
   function miniReady(id) {
-    return !timeLeft(id==='fish'?state.fishAt:(state.miniAt[id]||0)) && (id!=='loom'||(level()>=3&&count('cotton')>=3)) && (id!=='buffalo'||state.buffalo) && (id!=='fruit'||level()>=7);
+    return !timeLeft(id==='fish'?state.fishAt:(state.miniAt[id]||0)) && (id!=='loom'||(level()>=3&&count('cotton')>=3)) && (id!=='buffalo'||state.buffalo) && (id!=='fruit'||level()>=7) && (id!=='mill'||(hasProperty('rice_mill')&&count('rice')>=3));
   }
   function miniButtonLabel(id) {
     const wait=timeLeft(id==='fish'?state.fishAt:(state.miniAt[id]||0));
@@ -354,6 +357,8 @@
     if(id==='loom'&&count('cotton')<3)return L('NEED 3 COTTON','ត្រូវការកប្បាស ៣');
     if(id==='buffalo'&&!state.buffalo)return L('BUILD BUFFALO PEN','សាងសង់ក្រោលក្របី');
     if(id==='fruit'&&level()<7)return `${L('LEVEL','កម្រិត')} 7`;
+    if(id==='mill'&&!hasProperty('rice_mill'))return L('BUILD RICE MILL','សាងសង់រោងម៉ាស៊ីនកិនស្រូវ');
+    if(id==='mill'&&count('rice')<3)return L('NEED 3 RICE','ត្រូវការស្រូវ ៣');
     return L('PLAY','លេង');
   }
   function miniCard(id) {
@@ -367,7 +372,8 @@
       cargo:['boat',L('Load the boat','ផ្ទុកទំនិញលើទូក'),L('Fill three boat loads without going over the limit. Earn bananas.','ផ្ទុកទំនិញលើទូកបីដងដោយមិនលើសចំណុះ ដើម្បីទទួលចេក។')],
       recipe:['cooking_house',L('Finish the recipe','បំពេញមុខម្ហូប'),L('Pick the missing ingredient in three dishes. Earn lemongrass.','ជ្រើសគ្រឿងផ្សំដែលខ្វះក្នុងម្ហូបបីមុខ ដើម្បីទទួលស្លឹកគ្រៃ។')],
       buffalo:['water_buffalo',L('Care for the buffalo','ថែទាំក្របី'),L('Brush, rinse, and dry in order. Earn a buffalo product.','ដុស លាង និងជូតតាមលំដាប់ ដើម្បីទទួលផលពីក្របី។')],
-      fruit:['fruit_orchard',L('Fruit Harvest','ប្រមូលផ្លែឈើ'),L('Choose the ripe mango in three rounds to earn fruit.','ជ្រើសស្វាយទុំបីជុំ ដើម្បីទទួលបានផ្លែឈើ។')]
+      fruit:['fruit_orchard',L('Fruit Harvest','ប្រមូលផ្លែឈើ'),L('Choose the ripe mango in three rounds to earn fruit.','ជ្រើសស្វាយទុំបីជុំ ដើម្បីទទួលបានផ្លែឈើ។')],
+      mill:['rice_mill',L('Rice Mill Challenge','ល្បែងកិនស្រូវ'),L('Measure three rice batches exactly. Use 3 rice to earn flour and XP.','វាស់ស្រូវបីជុំឱ្យត្រឹមត្រូវ។ ប្រើស្រូវ ៣ ដើម្បីទទួលម្សៅអង្ករ និងបទពិសោធន៍។')]
     }[id];
     const best=state.miniBest[id]||0;
     return `<div class="card mini-entry"><div class="mini-entry-art">${art(details[0])}</div><div><h3>${details[1]}</h3><p>${details[2]}</p><small class="mini-best">${L('Best','ល្អបំផុត')} <span class="mini-rating" aria-label="${L('Best rating','ពិន្ទុល្អបំផុត')} ${best}/3">${[1,2,3].map(n=>`<span class="${n<=best?'filled':''}"></span>`).join('')}</span></small></div><button class="btn small" data-action="openMini" data-id="${id}" ${miniReady(id)?'':'disabled'}>${miniButtonLabel(id)}</button></div>`;
@@ -375,6 +381,17 @@
   function renderGamesHub() {
     const bestCount=MINI_IDS.filter(id=>(state.miniBest[id]||0)===3).length;
     return `<div class="games-summary"><div>${art('basket')}<strong>${L('Village games','ល្បែងភូមិ')}</strong><span>${L('Play to earn useful items for your village.','លេងដើម្បីទទួលវត្ថុមានប្រយោជន៍សម្រាប់ភូមិ។')}</span></div><b>${bestCount}/${MINI_IDS.length} ${L('perfect','ល្អឥតខ្ចោះ')}</b></div><div class="games-list">${MINI_IDS.map(miniCard).join('')}</div>`;
+  }
+  function renderFarmGlance() {
+    const fields=state.plots.filter(plot=>plot&&!timeLeft(plot.at)).length;
+    const orders=state.orders.filter(order=>has(order.needs)).length;
+    const production=[...state.kitchenQueue,...state.workshopQueue].filter(job=>!timeLeft(job.at)).length;
+    const cards=[
+      ['farmMode','fields','mature_rice',fields,L('Crops ready','ដំណាំរួចរាល់')],
+      ['readyGoods','','cooking_house',production,L('Goods ready','ទំនិញរួចរាល់')],
+      ['tab','orders','order_board',orders,L('Orders ready','កម្ម៉ង់រួចរាល់')]
+    ];
+    return `<div class="farm-glance" aria-label="${L('Village status','ស្ថានភាពភូមិ')}">${cards.map(([action,id,icon,value,label])=>`<button data-action="${action}" data-id="${id}" aria-label="${value} ${label}">${art(icon)}<span><b data-glance="${action==='farmMode'?'fields':action==='readyGoods'?'production':'orders'}">${value}</b><small>${label}</small></span></button>`).join('')}</div>`;
   }
   function renderFarmDashboard() {
     const readyFields=state.plots.filter(plot=>plot&&!timeLeft(plot.at)).length;
@@ -389,7 +406,7 @@
       ['tab','journal','home',L('Grow village','ពង្រីកភូមិ')]
     ];
     const workReady=[...state.kitchenQueue,...state.workshopQueue].some(job=>!timeLeft(job.at));
-    const next=readyFields?[L('Harvest is ready','ផលដំណាំរួចរាល់'),L('Tap ripe fields to gather crops and XP.','ចុចស្រែទុំដើម្បីប្រមូលផល និងបទពិសោធន៍។'),'farmMode','fields','mature_rice']:readyOrders?[L('Help a neighbor','ជួយអ្នកភូមិ'),L('You have the goods for a village order.','អ្នកមានទំនិញគ្រប់សម្រាប់កម្ម៉ង់ភូមិ។'),'tab','orders','order_board']:workReady?[L('Village goods are ready','ទំនិញភូមិរួចរាល់'),L('Collect finished food and crafts.','ប្រមូលម្ហូប និងសិប្បកម្មដែលរួចរាល់។'),'tab','kitchen','weaving_house']:[L('Build your village','កសាងភូមិរបស់អ្នក'),L('Plant, make goods, fill orders, then improve your home.','ដាំដំណាំ ផលិតទំនិញ បំពេញកម្ម៉ង់ រួចកែលម្អផ្ទះ។'),'farmMode','fields','rice'];
+    const next=readyFields?[L('Harvest is ready','ផលដំណាំរួចរាល់'),L('Tap ripe fields to gather crops and XP.','ចុចស្រែទុំដើម្បីប្រមូលផល និងបទពិសោធន៍។'),'farmMode','fields','mature_rice']:readyOrders?[L('Help a neighbor','ជួយអ្នកភូមិ'),L('You have the goods for a village order.','អ្នកមានទំនិញគ្រប់សម្រាប់កម្ម៉ង់ភូមិ។'),'tab','orders','order_board']:workReady?[L('Village goods are ready','ទំនិញភូមិរួចរាល់'),L('Collect finished food and crafts.','ប្រមូលម្ហូប និងសិប្បកម្មដែលរួចរាល់។'),'readyGoods','','weaving_house']:[L('Build your village','កសាងភូមិរបស់អ្នក'),L('Plant, make goods, fill orders, then improve your home.','ដាំដំណាំ ផលិតទំនិញ បំពេញកម្ម៉ង់ រួចកែលម្អផ្ទះ។'),'farmMode','fields','rice'];
     return `<section class="dashboard-overview" aria-label="${L('Farm dashboard','ផ្ទាំងគ្រប់គ្រងកសិដ្ឋាន')}"><div class="dashboard-overview-top"><div><small>${escapeHtml(villageDisplayName())}</small><h2>${L('Your village is growing','ភូមិរបស់អ្នកកំពុងរីកចម្រើន')}</h2><span class="dashboard-prosperity">${L('Village prosperity','ភាពរីកចម្រើនភូមិ')} ${prosperity()}%</span></div><button class="dashboard-profile" data-action="profile" aria-label="${L('Open player profile','បើកប្រវត្តិអ្នកលេង')}">${art(state.avatarId)}</button></div><div class="dashboard-metrics"><div><strong data-dashboard="fields">${readyFields}</strong><span>${L('Crops ready','ដំណាំរួចរាល់')}</span></div><div><strong data-dashboard="orders">${readyOrders}</strong><span>${L('Orders ready','កម្ម៉ង់រួចរាល់')}</span></div><div><strong data-dashboard="goods">${goods}</strong><span>${L('Goods in stock','ទំនិញក្នុងឃ្លាំង')}</span></div></div></section>
       <div class="dashboard-heading"><h3>${L('What to do next','ធ្វើអ្វីបន្ទាប់')}</h3><span>${L('Tap to play','ចុចដើម្បីលេង')}</span></div><button class="dashboard-next" data-action="${next[2]}" data-id="${next[3]}">${art(next[4])}<span><b>${next[0]}</b><small>${next[1]}</small></span><i aria-hidden="true">›</i></button>
       <div class="dashboard-heading"><h3>${L('Village activities','សកម្មភាពក្នុងភូមិ')}</h3></div><div class="dashboard-actions">${actions.map(([action,id,icon,label])=>`<button data-action="${action}" data-id="${id}">${art(icon)}<span>${label}</span></button>`).join('')}</div>`;
@@ -399,6 +416,7 @@
     if(farmMode==='games')return `<div class="section-head"><h2>${L('Play in the village','លេងនៅក្នុងភូមិ')}</h2><small>${state.stats.miniGames||0} ${L('completed','បានបញ្ចប់')}</small></div>${switcher}${renderGamesHub()}`;
     return `<div class="section-head"><h2>${L('Your farm','កសិដ្ឋានរបស់អ្នក')}</h2><small>${state.plots.length}/20 ${L('fields','ស្រែ')}</small></div>
       ${state.tutorialStep?`<div class="tutorial-tip">${art(state.tutorialStep===3?'orders_nav':'rice')}<span>${state.tutorialStep===1?L('Tap a field and choose free rice.','ចុចស្រែ ហើយជ្រើសស្រូវឥតគិតថ្លៃ។'):state.tutorialStep===2?L('Wait for golden rice, then tap to harvest.','រង់ចាំស្រូវទុំ រួចចុចប្រមូលផល។'):L('Open Orders to help a neighbor.','បើកកម្ម៉ង់ដើម្បីជួយអ្នកភូមិ។')}</span><button data-action="skipTutorial">${L('SKIP','រំលង')}</button></div>`:''}
+      ${farmMode==='map'?renderFarmGlance():''}
       ${switcher}
       ${farmMode==='map'?renderMap():''}
       ${farmMode==='fields'?`<div class="section-head farm-seeds-head"><h2>${L('Choose a seed','ជ្រើសគ្រាប់ពូជ')}</h2><small>${L('Tap an empty field to plant','ចុចស្រែទំនេរដើម្បីដាំ')}</small></div><div class="seed-scroll" aria-label="${L('Seeds','គ្រាប់ពូជ')}">${CROPS.map(c=>`<button class="seed ${state.selected===c.id?'active':''} ${level()<c.level?'locked':''}" data-action="select" data-id="${c.id}"><span class="emoji">${art(c.id)}</span><strong>${name(c)}</strong><small>${level()<c.level?`${L('Level','កម្រិត')} ${c.level}`:c.cost?`◉ ${c.cost}`:L('FREE','ឥតគិតថ្លៃ')}</small></button>`).join('')}</div>`:''}
@@ -463,14 +481,15 @@
   }
   function renderQueue(kind) {
     const kitchen=kind==='kitchen',queue=kitchen?state.kitchenQueue:state.workshopQueue;
-    return `<div class="queue-head"><h3>${kitchen?L('Kitchen queue','ជួរផ្ទះបាយ'):L('Workshop queue','ជួរសិប្បកម្ម')}</h3><small>${queue.length}/2 ${L('slots','កន្លែង')}</small></div><div class="production-queue">${[0,1].map(i=>{const job=queue[i],item=job&&BY_ID[job.id],seconds=job?timeLeft(job.at):0;return `<div class="queue-slot ${job?(seconds?'working':'complete'):'empty'}">${job?`${art(item.id)}<span><b>${name(item)} ×${job.amount}</b><small>${seconds?`${L('Ready in','រួចរាល់ក្នុង')} ${clock(seconds)}`:L('Ready to collect','រួចរាល់ដើម្បីប្រមូល')}</small></span><button class="btn small" data-action="${kitchen?'collectCook':'collectCraft'}" data-id="${i}" ${seconds?'disabled':''}>${seconds?clock(seconds):L('COLLECT','ប្រមូល')}</button>`:`${art(kitchen?'cooking_house':'weaving_house')}<span>${L('Open slot','កន្លែងទំនេរ')}</span>`}</div>`;}).join('')}</div>`;
+    const ready=queue.filter(job=>!timeLeft(job.at)).length;
+    return `<div class="queue-head"><h3>${kitchen?L('Kitchen queue','ជួរផ្ទះបាយ'):L('Workshop queue','ជួរសិប្បកម្ម')}</h3><div><small>${queue.length}/2 ${L('slots','កន្លែង')}</small><button class="queue-collect-all" data-action="collectAll" data-id="${kind}" ${ready?'':'disabled'}>${L('COLLECT ALL','ប្រមូលទាំងអស់')} ${ready?`(${ready})`:''}</button></div></div><div class="production-queue">${[0,1].map(i=>{const job=queue[i],item=job&&BY_ID[job.id],seconds=job?timeLeft(job.at):0;return `<div class="queue-slot ${job?(seconds?'working':'complete'):'empty'}">${job?`${art(item.id)}<span><b>${name(item)} ×${job.amount}</b><small>${seconds?`${L('Ready in','រួចរាល់ក្នុង')} ${clock(seconds)}`:L('Ready to collect','រួចរាល់ដើម្បីប្រមូល')}</small></span><button class="btn small" data-action="${kitchen?'collectCook':'collectCraft'}" data-id="${i}" ${seconds?'disabled':''}>${seconds?clock(seconds):L('COLLECT','ប្រមូល')}</button>`:`${art(kitchen?'cooking_house':'weaving_house')}<span>${L('Open slot','កន្លែងទំនេរ')}</span>`}</div>`;}).join('')}</div>`;
   }
   function renderWorkshop() {
     const ch=MAKERS[Math.min(state.makersChapter,MAKERS.length-1)];
     return `<div class="card chapter"><h3>${art('weaving_house')} ${state.makersWon?L('The makers fair is open!','ផ្សារអ្នកផលិតបានបើក!'):(state.lang==='km'?ch.km:ch.en)}</h3><p>${state.makersWon?L('Keep making goods and sharing gifts with the village.','បន្តផលិតទំនិញ និងជូនអំណោយដល់អ្នកភូមិ។'):(state.lang==='km'?ch.textKm:ch.text)}</p>
       ${state.makersWon?'':ch.goals.map(([key,n])=>`<div class="row between"><small>${makersGoalName(key)}</small><b>${Math.min(makersValue(key),n)} / ${n}</b></div><div class="progress"><span style="width:${Math.min(100,makersValue(key)/n*100)}%"></span></div>`).join('')}
       ${state.makersWon?'':`<button class="btn" data-action="makersClaim" ${makersComplete()?'':'disabled'}>${state.makersChapter===2?L('OPEN MAKERS FAIR','បើកផ្សារអ្នកផលិត'):L('COMPLETE CHAPTER','បញ្ចប់វគ្គ')}</button>`}</div>
-      ${miniCard('loom')}
+      <div class="workshop-activities">${miniCard('loom')}${miniCard('mill')}</div>
       ${renderQueue('workshop')}
       <div class="list craft-grid">${CRAFTS.map(r=>`<div class="card"><div class="row"><div class="item-icon">${art(r.id)}</div><div class="item-main"><b>${name(r)}</b><small>${level()<r.level?`${L('Unlock at level','បើកនៅកម្រិត')} ${r.level}`:`${clock(r.seconds)} • ◉ ${r.sell} • +${r.xp} XP`}</small></div></div><div class="requirements">${Object.entries(r.needs).map(([id,n])=>`<span class="req ${count(id)>=n?'ok':''}">${art(id)} ${count(id)}/${n}</span>`).join('')}</div><div class="row between"><small>${L('Owned','មាន')}: ${count(r.id)}</small><button class="btn small" data-action="craft" data-id="${r.id}" ${state.workshopQueue.length>=2||level()<r.level||!has(r.needs)?'disabled':''}>${L('MAKE','ផលិត')}</button></div></div>`).join('')}</div>`;
   }
@@ -573,8 +592,8 @@
   function renderMini() {
     const s=miniSession;
     if(!s)return '';
-    const title={rice:L('Sort the rice harvest','បែងចែកស្រូវ'),loom:L('Weave a krama','ត្បាញក្រមា'),market:L('Pack market baskets','រៀបចំកន្ត្រកផ្សារ'),lotus:L('Find pond pairs','ស្វែងរកគូនៅស្រះ'),canal:L('Guide the water','នាំទឹកទៅស្រែ'),fish:L('Reel in a fish','ទាញត្រី'),cargo:L('Load the boat','ផ្ទុកទំនិញលើទូក'),recipe:L('Finish the recipe','បំពេញមុខម្ហូប'),buffalo:L('Care for the buffalo','ថែទាំក្របី'),fruit:L('Fruit Harvest','ប្រមូលផ្លែឈើ')}[s.id];
-    const icon={rice:'mature_rice',loom:'loom',market:'basket',lotus:'lotus',canal:'village_well',fish:'fish_pond',cargo:'boat',recipe:'cooking_house',buffalo:'water_buffalo',fruit:'fruit_orchard'}[s.id];
+    const title={rice:L('Sort the rice harvest','បែងចែកស្រូវ'),loom:L('Weave a krama','ត្បាញក្រមា'),market:L('Pack market baskets','រៀបចំកន្ត្រកផ្សារ'),lotus:L('Find pond pairs','ស្វែងរកគូនៅស្រះ'),canal:L('Guide the water','នាំទឹកទៅស្រែ'),fish:L('Reel in a fish','ទាញត្រី'),cargo:L('Load the boat','ផ្ទុកទំនិញលើទូក'),recipe:L('Finish the recipe','បំពេញមុខម្ហូប'),buffalo:L('Care for the buffalo','ថែទាំក្របី'),fruit:L('Fruit Harvest','ប្រមូលផ្លែឈើ'),mill:L('Rice Mill Challenge','ល្បែងកិនស្រូវ')}[s.id];
+    const icon={rice:'mature_rice',loom:'loom',market:'basket',lotus:'lotus',canal:'village_well',fish:'fish_pond',cargo:'boat',recipe:'cooking_house',buffalo:'water_buffalo',fruit:'fruit_orchard',mill:'rice_mill'}[s.id];
     const total=s.id==='loom'||s.id==='canal'?4:3;
     const progress=`<div class="mini-progress" aria-label="${L('Progress','វឌ្ឍនភាព')} ${Math.min(s.round+1,total)} / ${total}">${Array.from({length:total},(_,i)=>`<span class="${i<s.round?'done':i===s.round?'current':''}"></span>`).join('')}</div>`;
     if(s.finished) {
@@ -605,6 +624,8 @@
       board=`<p>${L('Care for your buffalo in order: brush, rinse, then dry.','ថែទាំក្របីតាមលំដាប់៖ ដុស លាង រួចជូត។')}</p><div class="mini-care-scene">${art('water_buffalo')}<strong>${L('Next','បន្ទាប់')}: ${stages[s.care[s.round]][0]}</strong></div><div class="mini-options">${s.options.map(id=>`<button class="mini-care-tool" data-action="miniPick" data-id="${id}">${art(stages[id][1])}<b>${stages[id][0]}</b></button>`).join('')}</div>`;
     } else if(s.id==='fruit') {
       board=`<p>${L('Find the ripe mango. Leave the bananas for later.','រកស្វាយទុំ។ ទុកចេកសម្រាប់ពេលក្រោយ។')}</p><div class="mini-fruit-grid">${s.board.map((id,i)=>`<button class="mini-fruit-tile" data-action="miniPick" data-id="${i}" aria-label="${name(BY_ID[id])}">${art(id)}<b>${name(BY_ID[id])}</b></button>`).join('')}</div>`;
+    } else if(s.id==='mill') {
+      board=`<p>${L('Measure exactly','វាស់ឱ្យបានត្រឹមត្រូវ')} <b>${s.target}</b> ${L('scoops. Too many scoops restart this batch.','ស្លាបព្រា។ បើលើស ត្រូវចាប់ផ្តើមជុំនេះម្ដងទៀត។')}</p><div class="mini-mill-scene">${art('rice_mill')}<div><strong>${s.load}/${s.target}</strong><div class="progress"><span style="width:${s.load/s.target*100}%"></span></div></div></div><div class="mini-options">${[1,2,3].map(n=>`<button class="mini-mill-scoop" data-action="miniPick" data-id="${n}" aria-label="${n} ${L('scoops','ស្លាបព្រា')}">${art('rice')}<b>+${n}</b></button>`).join('')}</div><small class="mini-cost">${L('Uses 3 rice when complete','ប្រើស្រូវ ៣ ពេលបញ្ចប់')}</small>`;
     }
     return `<div class="mini-hero">${art(icon,s.id==='cargo'?'cargo-boat-art':'')}</div><h2>${title}</h2>${progress}${board}<p class="mini-feedback" role="status">${s.feedback||L('Take your time. There is no timer.','លេងតាមសម្រួល។ គ្មានការកំណត់ពេល។')}</p><div class="actions"><button class="btn secondary" data-action="close">${L('LEAVE GAME','ចាកចេញពីល្បែង')}</button></div>`;
   }
@@ -616,12 +637,16 @@
       body=`<div class="profile-cover"><div class="profile-portrait">${art(state.avatarId)}</div><span>${L('PLAYER PROFILE','ប្រវត្តិអ្នកលេង')}</span></div><h2>${escapeHtml(profileDisplayName())}</h2><p class="profile-title">${profileTitle()} · ${L('Level','កម្រិត')} ${level()}</p><div class="profile-progress"><span>XP ${state.xp} / ${nextLevel()}</span><div class="progress"><span style="width:${level()===XP_LEVELS.length-1?100:Math.min(100,(state.xp-XP_LEVELS[level()])/(nextLevel()-XP_LEVELS[level()])*100)}%"></span></div></div><div class="profile-stats">${[[art('rice'),state.stats.harvest||0,L('Harvests','ប្រមូលផល')],[art('order_board'),state.stats.orders||0,L('Orders','កម្ម៉ង់')],[art('basket'),state.stats.miniGames||0,L('Games','ល្បែង')],[art('festival_lanterns'),unlocked,L('Badges','សមិទ្ធផល')]].map(([icon,value,label])=>`<div>${icon}<b>${value}</b><small>${label}</small></div>`).join('')}</div><fieldset class="avatar-choices"><legend>${L('Choose your farmer','ជ្រើសរើសកសិករ')}</legend>${['farmer_profile','farmer_avatar_basket','farmer_avatar_rice'].map((id,i)=>`<label><input type="radio" name="farmer-avatar" value="${id}" ${state.avatarId===id?'checked':''}><span>${art(id)}<small>${[L('Farmer','កសិករ'),L('Basket farmer','កសិករកន្ត្រក'),L('Rice farmer','កសិករស្រូវ')][i]}</small></span></label>`).join('')}</fieldset><div class="profile-fields"><label class="profile-label" for="profile-name">${L('Farmer name','ឈ្មោះកសិករ')}</label><input id="profile-name" class="profile-input" maxlength="64" autocomplete="nickname" value="${escapeHtml(profileDisplayName())}"><label class="profile-label" for="farm-name">${L('Farm name','ឈ្មោះកសិដ្ឋាន')}</label><input id="farm-name" class="profile-input" maxlength="64" value="${escapeHtml(farmDisplayName())}"><label class="profile-label" for="village-name">${L('Village name','ឈ្មោះភូមិ')}</label><input id="village-name" class="profile-input" maxlength="64" value="${escapeHtml(villageDisplayName())}"></div><p class="muted profile-note">${L('Your profile stays on this device with your saved farm.','ប្រវត្តិអ្នករក្សាទុកលើឧបករណ៍នេះជាមួយកសិដ្ឋាន។')}</p><div class="actions"><button class="btn secondary" data-action="close">${L('CANCEL','បោះបង់')}</button><button class="btn" data-action="saveProfile">${L('SAVE PROFILE','រក្សាទុកប្រវត្តិ')}</button></div>`;
     }
     else if(modal==='mini') body=renderMini();
+    else if(modal==='neighbor') {
+      const friend=FRIENDS.find(entry=>entry.id===pendingFriend);
+      if(friend){const favorite=BY_ID[friend.favorite],hearts=state.friendship[friend.id]||0,waiting=timeLeft(state.giftAt[friend.id]||0);body=`<div class="neighbor-portrait">${art(friend.id)}</div><h2>${name(friend)}</h2><p>${L('Village friend','មិត្តអ្នកភូមិ')} · ${L('Friendship','មិត្តភាព')} ${hearts}</p><div class="neighbor-favorite">${art(friend.favorite)}<span>${L('Favorite gift','អំណោយចូលចិត្ត')}<b>${name(favorite)} · ${L('Stored','ក្នុងឃ្លាំង')} ${count(friend.favorite)}</b></span></div><p class="muted">${L('Share a favorite item to grow friendship. Every three hearts bring a coin gift.','ជូនវត្ថុដែលចូលចិត្តដើម្បីបង្កើនមិត្តភាព។ រាល់បេះដូងបី ទទួលបានកាក់។')}</p><div class="actions"><button class="btn secondary" data-action="close">${L('CLOSE','បិទ')}</button><button class="btn" data-action="gift" data-id="${friend.id}" ${waiting||!count(friend.favorite)?'disabled':''}>${waiting?clock(waiting):L('GIVE GIFT','ជូនអំណោយ')}</button></div>`;}
+    }
     else if(modal==='sale') {
       const item=BY_ID[pendingSale],owned=item?count(item.id):0,price=item?sellPrice(item):0;
       body=item?`<div class="dialog-art">${art(item.id)}</div><h2>${L('Sell','លក់')} ${name(item)}</h2><p>${L('You have','អ្នកមាន')} <b>${owned}</b>. ${L('Choose how many to sell.','ជ្រើសចំនួនដែលចង់លក់។')}</p><div class="sale-options"><button class="btn secondary" data-action="sellQty" data-id="1" ${owned<1?'disabled':''}>1 · +${price}</button><button class="btn secondary" data-action="sellQty" data-id="5" ${owned<5?'disabled':''}>5 · +${price*5}</button><button class="btn" data-action="sellQty" data-id="all" ${owned<1?'disabled':''}>${L('ALL','ទាំងអស់')} ${owned} · +${price*owned}</button></div><div class="actions"><button class="btn secondary" data-action="close">${L('CANCEL','បោះបង់')}</button></div>`:'';
     }
     else if(modal==='help') body=`<div class="welcome-art">${art('home')}${art('rice')}${art('srey_mom')}</div><h2>${L('Welcome to Srok Srae','សូមស្វាគមន៍មកកាន់ស្រុកស្រែ')}</h2><p>${L('Grow rice, help your neighbors, and bring this Cambodian village to life. Start with the glowing field.','ដាំស្រូវ ជួយអ្នកភូមិ ហើយធ្វើឱ្យភូមិខ្មែរនេះរស់រវើក។ ចាប់ផ្តើមពីស្រែដែលភ្លឺ។')}</p><div class="actions"><button class="btn secondary" data-action="skipTutorial">${L('SKIP','រំលង')}</button><button class="btn" data-action="startTutorial">${L('SHOW ME','បង្ហាញខ្ញុំ')}</button></div>`;
-    else if(modal==='seedPicker') body=`<h2>${L('Plant a field','ដាំដំណាំក្នុងស្រែ')}</h2><p>${L('Choose a seed for this field. Rice is always free.','ជ្រើសគ្រាប់ពូជសម្រាប់ស្រែនេះ។ គ្រាប់ស្រូវឥតគិតថ្លៃជានិច្ច។')}</p><div class="seed-picker">${CROPS.map(c=>`<button class="seed-choice" data-action="plantChosen" data-id="${c.id}" ${level()<c.level||state.coins<c.cost?'disabled':''}>${art(c.id)}<span><b>${name(c)}</b><small>${level()<c.level?`${L('Level','កម្រិត')} ${c.level}`:`${c.cost?`◉ ${c.cost}`:L('FREE','ឥតគិតថ្លៃ')} · ${clock(c.seconds)}`}</small></span></button>`).join('')}</div><div class="actions"><button class="btn secondary" data-action="close">${L('CANCEL','បោះបង់')}</button></div>`;
+    else if(modal==='seedPicker') body=`<h2>${L('Plant a field','ដាំដំណាំក្នុងស្រែ')}</h2><p>${L('Choose a seed for this field. Rice is always free.','ជ្រើសគ្រាប់ពូជសម្រាប់ស្រែនេះ។ គ្រាប់ស្រូវឥតគិតថ្លៃជានិច្ច។')}</p><div class="seed-picker">${CROPS.map(c=>`<button class="seed-choice" data-action="plantChosen" data-id="${c.id}" ${level()<c.level||state.coins<c.cost?'disabled':''}>${art(c.id)}<span><b>${name(c)}</b><small>${level()<c.level?`${L('Level','កម្រិត')} ${c.level}`:`${c.cost?`◉ ${c.cost}`:L('FREE','ឥតគិតថ្លៃ')} · ${clock(c.seconds)}`}</small><small>+${c.xp} XP · ×${cropYield(c)} ${L('harvest','ផល')}</small><small>${L('Stored','ក្នុងឃ្លាំង')} ${count(c.id)}</small></span></button>`).join('')}</div><div class="actions"><button class="btn secondary" data-action="close">${L('CANCEL','បោះបង់')}</button></div>`;
     else if(modal==='animal') {
       const chicken=pendingAnimal==='chicken',owned=state[pendingAnimal],at=state[chicken?'coopAt':'buffaloAt'];
       const feed=chicken?'corn':'morning_glory',canFeed=count(feed)>0;
@@ -786,6 +811,20 @@
     add(item.id,job.amount);state.xp+=item.xp;state.stats.crafted+=job.amount;state.craftedKinds[item.id]=(state.craftedKinds[item.id]||0)+job.amount;state.workshopQueue.splice(Number(index),1);
     commit(830);toast(`+${job.amount} ${name(item)} ${L('finished!','រួចរាល់!')}`);
   }
+  function collectAll(kind) {
+    const kitchen=kind==='kitchen',queue=kitchen?state.kitchenQueue:kind==='workshop'?state.workshopQueue:null;
+    if(!queue)return;
+    let jobs=0,goods=0,xp=0;
+    for(let i=queue.length-1;i>=0;i--) {
+      const job=queue[i],item=(kitchen?RECIPES:CRAFTS).find(entry=>entry.id===job.id);
+      if(!item||timeLeft(job.at))continue;
+      add(item.id,job.amount);state.xp+=item.xp;xp+=item.xp;goods+=job.amount;jobs++;
+      if(kitchen){state.stats.cooked+=job.amount;state.cookedKinds[item.id]=(state.cookedKinds[item.id]||0)+job.amount;}
+      else {state.stats.crafted+=job.amount;state.craftedKinds[item.id]=(state.craftedKinds[item.id]||0)+job.amount;}
+      queue.splice(i,1);
+    }
+    if(jobs){commit(830);toast(`${L('Collected','បានប្រមូល')} ${goods} ${L('goods','ទំនិញ')} · +${xp} XP`);}
+  }
   function giveGift(id) {
     const friend=FRIENDS.find(x=>x.id===id);
     if(!friend||timeLeft(state.giftAt[id]||0)||!count(friend.favorite))return;
@@ -875,16 +914,22 @@
       reward.items.milk=1;reward.xp=perfect?10:6;state.stats.milk++;
     } else if(s.id==='fruit') {
       reward.items.mango=perfect?2:1;reward.xp=perfect?9:6;
+    } else if(s.id==='mill') {
+      if(!has({rice:3})){miniSession=null;modal='';renderModal();return;}
+      spend({rice:3});reward.items.rice_flour=perfect?2:1;reward.xp=perfect?12:8;
+      state.stats.crafted+=reward.items.rice_flour;
+      state.craftedKinds.rice_flour=(state.craftedKinds.rice_flour||0)+reward.items.rice_flour;
     }
     Object.entries(reward.items).forEach(([item,amount])=>add(item,amount));
     state.coins+=reward.coins;state.stats.earned+=reward.coins;
     state.xp+=reward.xp;state.stats.miniGames++;
     state.miniBest[s.id]=Math.max(state.miniBest[s.id]||0,stars);
-    if(s.id!=='fish')state.miniAt[s.id]=Date.now()+(s.id==='market'?180000:['lotus','canal','cargo','recipe','buffalo','fruit'].includes(s.id)?120000:90000);
+    if(s.id!=='fish')state.miniAt[s.id]=Date.now()+(s.id==='market'?180000:['lotus','canal','cargo','recipe','buffalo','fruit','mill'].includes(s.id)?120000:90000);
     s.reward=reward;s.stars=stars;save();render();confetti();ping(880);
   }
   function act(action,id) {
     if(action==='tab'){tab=id;modal='';miniSession=null;render();window.scrollTo(0,0);return;}
+    if(action==='readyGoods'){tab='kitchen';kitchenMode=state.kitchenQueue.some(job=>!timeLeft(job.at))?'cook':state.workshopQueue.some(job=>!timeLeft(job.at))?'workshop':'cook';modal='';render();window.scrollTo(0,0);return;}
     if(action==='openMini')return startMini(id);
     if(action==='miniPick')return chooseMini(id);
     if(action==='openPlot'){const index=Number(id);if(index>=0&&index<state.plots.length&&!state.plots[index]){pendingPlot=index;modal='seedPicker';renderModal();}return;}
@@ -913,6 +958,7 @@
     if(action==='villageMode'){villageMode=['build','decor','people','progress'].includes(id)?id:'build';render();window.scrollTo(0,0);return;}
     if(action==='story'){tab=!state.won?'orders':!state.journeyWon?'explore':'kitchen';if(tab==='kitchen')kitchenMode='workshop';render();window.scrollTo(0,0);return;}
     if(action==='profile'){modal='profile';renderModal();return;}
+    if(action==='neighbor'){if(!FRIENDS.some(friend=>friend.id===id))return;pendingFriend=id;modal='neighbor';renderModal();return;}
     if(action==='saveProfile'){
       const farmer=modalRoot.querySelector('#profile-name')?.value.trim(),farm=modalRoot.querySelector('#farm-name')?.value.trim(),village=modalRoot.querySelector('#village-name')?.value.trim();
       if(!farmer||!farm||!village)return toast(L('Enter all three names.','សូមបញ្ចូលឈ្មោះទាំងបី។'));
@@ -939,6 +985,7 @@
     if(action==='collectCook')return collectCook(id);
     if(action==='craft')return startCraft(id);
     if(action==='collectCraft')return collectCraft(id);
+    if(action==='collectAll')return collectAll(id);
     if(action==='gift')return giveGift(id);
     if(action==='expand')return expandFarm();
     if(action==='makersClaim')return claimMakers();
@@ -975,6 +1022,8 @@
   function tick() {
     const fieldsMetric=document.querySelector('[data-dashboard="fields"]');
     if(fieldsMetric){fieldsMetric.textContent=state.plots.filter(plot=>plot&&!timeLeft(plot.at)).length;document.querySelector('[data-dashboard="orders"]').textContent=state.orders.filter(order=>has(order.needs)).length;document.querySelector('[data-dashboard="goods"]').textContent=ALL.filter(item=>count(item.id)>0).length;}
+    const glanceFields=document.querySelector('[data-glance="fields"]');
+    if(glanceFields){glanceFields.textContent=state.plots.filter(plot=>plot&&!timeLeft(plot.at)).length;document.querySelector('[data-glance="production"]').textContent=[...state.kitchenQueue,...state.workshopQueue].filter(job=>!timeLeft(job.at)).length;document.querySelector('[data-glance="orders"]').textContent=state.orders.filter(order=>has(order.needs)).length;}
     document.querySelectorAll('.map-plot[data-id]').forEach(el=>{
       const plot=state.plots[Number(el.dataset.id)];if(!plot)return;
       const seconds=timeLeft(plot.at),timer=el.querySelector('small');
@@ -1004,6 +1053,7 @@
     for(const [action,queue] of [['collectCook',state.kitchenQueue],['collectCraft',state.workshopQueue]]){
       document.querySelectorAll(`[data-action="${action}"]`).forEach(button=>{const job=queue[Number(button.dataset.id)];if(!job)return;const seconds=timeLeft(job.at);button.textContent=seconds?clock(seconds):L('COLLECT','ប្រមូល');button.disabled=!!seconds;});
     }
+    document.querySelectorAll('[data-action="collectAll"]').forEach(button=>{const queue=button.dataset.id==='kitchen'?state.kitchenQueue:state.workshopQueue;const ready=queue.filter(job=>!timeLeft(job.at)).length;button.disabled=!ready;button.textContent=`${L('COLLECT ALL','ប្រមូលទាំងអស់')}${ready?` (${ready})`:''}`;});
     for(const [id,queue] of [['kitchen',state.kitchenQueue],['workshop',state.workshopQueue]]){
       const el=document.querySelector(`.map-station[data-id="${id}"]`);if(el)el.classList.toggle('map-ready',queue.some(job=>!timeLeft(job.at)));
     }

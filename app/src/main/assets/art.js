@@ -28,7 +28,7 @@
   entries.net = entries.fish_pond;
   entries.cart = entries.river_landing;
   entries.stove = entries.cooking_house;
-  const standalone = {family_home:'art/family-home.webp',produce_truck:'art/produce-truck.webp',produce_motorbike:'art/produce-motorbike.webp',farmer_profile:'art/farmer-profile.webp',farmer_avatar_basket:'art/farmer-avatar-basket.webp',farmer_avatar_rice:'art/farmer-avatar-rice.webp',water_buffalo:'art/water-buffalo-v2.webp',fruit_orchard:'art/fruit-orchard.webp',river_boat:'art/river-boat.webp',community_hall:'art/community-hall.webp'};
+  const standalone = {family_home:'art/family-home.webp',produce_truck:'art/produce-truck.webp',produce_motorbike:'art/produce-motorbike.webp',farmer_profile:'art/farmer-profile.webp',farmer_avatar_basket:'art/farmer-avatar-basket.webp',farmer_avatar_rice:'art/farmer-avatar-rice.webp',water_buffalo:'art/water-buffalo-v2.webp',fruit_orchard:'art/fruit-orchard.webp',river_boat:'art/river-boat.webp',community_hall:'art/community-hall.webp',rice_mill:'art/rice-mill-v2.webp'};
 
   function sprite(id, className='') {
     if(standalone[id])return `<img class="art-image ${className}" src="${standalone[id]}" alt="" loading="lazy" decoding="async">`;

@@ -1,10 +1,10 @@
 # Srok Srae (ស្រុកស្រែ) — Major Update Design and Development Plan
 
-Status: v2.0.0 was the public release when this audit began. The v1.9.0 baseline in the request is superseded. The v2.1.0 work described as **implemented** below is a focused continuation, not completion of this entire plan. Costs and unlocks beyond level 10 are design targets requiring play balance. Cambodian names, food details, and regional depictions need review with Cambodian players before broad promotion.
+Status: v2.0.0 was the public release when this audit began. The v1.9.0 baseline in the request is superseded. The v2.1.0 and v2.2.0 work described as **implemented** below is a focused continuation, not completion of this entire plan. Costs and unlocks beyond level 10 are design targets requiring play balance. Cambodian names, food details, and regional depictions need review with Cambodian players before broad promotion.
 
 ## 1. Executive Summary
 
-Preserve the offline, bilingual Cambodian village game and build quality around its existing plant → make → trade → expand loop. v2.1.0 extends the level path to 10, adds three functional and visible purchases, a bounded daily market demand bonus, a tenth item earning mini-game, new illustrated assets, and a simple prosperity measure. A production quality map, complete asset replacement, rich NPC animation, audio, and measured 60 FPS need later releases.
+Preserve the offline, bilingual Cambodian village game and build quality around its existing plant → make → trade → expand loop. v2.1.0 extends the level path to 10, adds three functional and visible purchases, a bounded daily market demand bonus, a tenth item earning mini-game, new illustrated assets, and a simple prosperity measure. v2.2.0 puts ready actions at the top of Farm, adds an item earning rice mill game, finished-product batch collection, and tappable village friends. A production quality map, complete asset replacement, rich NPC animation, audio, and measured 60 FPS need later releases.
 
 ## 2. Current Game Problems
 
@@ -20,7 +20,7 @@ Show one next action on the dashboard, one clear reward at collection, and the n
 
 ## 5. New Dashboard UX/UI
 
-Top: avatar, level, XP, coins. Center: directly interactive village map. Below: three small counters for ready crops, fillable orders, and stocked goods; one contextual next action; six illustrated shortcuts. v2.1.0 adds a compact prosperity value. Future passes should move one contextual action over the map only after touch and visibility tests, without hiding the fields.
+Top: avatar, level, XP, coins. Farm now puts three tappable ready-action cards above its map: harvestable crops, completed kitchen/workshop goods, and fillable orders. Center: directly interactive village map. Below: contextual next action and six illustrated shortcuts. v2.1.0 adds a compact prosperity value. Further overlay changes need touch and visibility tests without hiding the fields.
 
 ## 6. Complete Navigation Architecture
 
@@ -60,7 +60,7 @@ Screen specifications below use a shared system: rice green `#207663`, deep teal
 
 ## 8. Village Map Redesign
 
-Keep the current movable 900×650 village as the functional base. v2.1.0 adds visible orchard, community hall, and produce boat upon purchase. Next, divide art into farm, homes, pond, market, workshops, and river anchors; repaint ground with clear walkable paths; then stage villagers, birds, and water in quality-scaled layers. Decoration edit mode retains a grid, selection, cancel, and saved position. Any decorative school or pagoda-inspired landmark needs careful cultural art review and should have no disrespectful gameplay transaction.
+Keep the current movable 900×650 village as the functional base. v2.1.0 adds visible orchard, community hall, and produce boat upon purchase. v2.2.0 adds two rotating daily villager portraits that open the saved friendship and gift interaction. Next, divide art into farm, homes, pond, market, workshops, and river anchors; repaint ground with clear walkable paths; then stage full villagers, birds, and water in quality-scaled layers. Decoration edit mode retains a grid, selection, cancel, and saved position. Any decorative school or pagoda-inspired landmark needs careful cultural art review and should have no disrespectful gameplay transaction.
 
 ## 9. Visual Art Direction
 
@@ -68,7 +68,7 @@ Soft 2.5D view, approximately 30° downward camera, warm light from upper left, 
 
 ## 10. HD Asset Requirements
 
-Source PNGs should be archived, shipped WebP variants sized to display, transparency for isolated objects, and visually inspected at 320 dp and 390 dp. The three v2.1.0 illustrated cutouts are 720 px on their longest side; their optimized files are about 68–174 KB. Inventory for later production: 16 crops × 5 stages; chicken/duck/buffalo idle, feed, walk, collect; six villager portraits plus map poses; farm house, storage, mill, kitchen, loom, market, hall, pens, stalls; bicycle, motorbike, boat, pickup, truck; pond, bridge, roads, palms, banana trees, fences, crates, tools, baskets, krama, cooking vessels; 13 food cards; four regional backgrounds; eight reward/UI families; mini-game tiles and feedback. Provide atlas metadata, pivot, scale, frame count, lighting, and export size for each asset before a bulk generation pass.
+Source PNGs should be archived, shipped WebP variants sized to display, transparency for isolated objects, and visually inspected at 320 dp and 390 dp. The three v2.1.0 illustrated cutouts are 720 px on their longest side; their optimized files are about 68–174 KB. v2.2.0 adds an original transparent rice mill cutout, 720×658 px and about 128 KB shipped. Inventory for later production: 16 crops × 5 stages; chicken/duck/buffalo idle, feed, walk, collect; six villager portraits plus map poses; farm house, storage, kitchen, loom, market, hall, pens, stalls; bicycle, motorbike, boat, pickup, truck; pond, bridge, roads, palms, banana trees, fences, crates, tools, baskets, krama, cooking vessels; 13 food cards; four regional backgrounds; eight reward/UI families; mini-game tiles and feedback. Provide atlas metadata, pivot, scale, frame count, lighting, and export size for each asset before a bulk generation pass.
 
 ## 11. Player Profile System
 
@@ -140,7 +140,7 @@ The prior nine games (rice, fish, pond pairs, water gates, loom, basket packing,
 
 ## 28. New Mini-Game Concepts
 
-**Implemented in v2.1.0:** Fruit Harvest, a three-round ripe-mango selection activity, awards mango and XP with a cooldown and rating. **P2 candidates:** rice mill sorting for flour, irrigation routing for crop materials, and a cooking sequence for a dish ingredient. **P3 candidates:** timed market rush and festival preparation. Any new activity must produce an item used by farming, food, crafting, orders, or a chapter; test that it is understandable in one short instruction.
+**Implemented in v2.1.0:** Fruit Harvest, a three-round ripe-mango selection activity, awards mango and XP with a cooldown and rating. **Implemented in v2.2.0:** Rice Mill, three exact-measure rounds unlocked by buying the mill; a successful run spends three rice and yields one flour, or two flour with a perfect rating. **P2 candidates:** irrigation routing for crop materials and a cooking sequence for a dish ingredient. **P3 candidates:** timed market rush and festival preparation. Any new activity must produce an item used by farming, food, crafting, orders, or a chapter; test that it is understandable in one short instruction.
 
 ## 29. Journey Improvements
 
@@ -215,7 +215,7 @@ Real-time multiplayer, a pay-to-win currency, manual vehicle driving, unrestrict
 
 ## 42. Testing Checklist
 
-Automated desktop checks cover planting, growth stages, quick harvest, chicken and buffalo, fishing reward gating, ten mini-games, cooking/craft queues, orders, market sales, journeys, campaigns, map editing, English UI, profile, purchases, old-save migration, corrupt-save recovery, and asset decode. Android release checks: Gradle build, package/version, signature continuity, emulator install-over, launch, offline airplane mode, Khmer font, update manifest/download/hash/installer, 320/390/large screen. Still required: physical phone frame-time/memory/battery runs, screen-reader review, rotation policy check, native Khmer copy review, first-session player play test.
+Automated desktop checks cover planting, growth stages, quick harvest, chicken and buffalo, fishing reward gating, eleven mini-games, cooking/craft queues and batch collection, orders, market sales, journeys, campaigns, map editing, village gifts, English UI, profile, purchases, old-save migration, corrupt-save recovery, and asset decode. Android release checks: Gradle build, package/version, signature continuity, emulator install-over, launch, offline airplane mode, Khmer font, update manifest/download/hash/installer, 320/390/large screen. Still required: physical phone frame-time/memory/battery runs, screen-reader review, rotation policy check, native Khmer copy review, first-session player play test.
 
 ## 43. Performance Acceptance Criteria
 
@@ -227,8 +227,8 @@ New players locate an empty field, plant rice, and identify the next action with
 
 ## 45. Gameplay Acceptance Criteria
 
-All ten mini-games grant their stated item only after success and persist rating/cooldown. Every property grants the displayed effect once, survives reload, and cannot overdraw coins. Free rice permits recovery from zero coins. Three stories can finish and free play continues. Market demand never reduces base price; new goods have uses. Save migration preserves old fields, inventory, story, and purchases.
+All eleven mini-games grant their stated item only after success and persist rating/cooldown. Every property grants the displayed effect once, survives reload, and cannot overdraw coins. Free rice permits recovery from zero coins. Three stories can finish and free play continues. Market demand never reduces base price; new goods have uses. Save migration preserves old fields, inventory, story, and purchases. Batch collection awards every ready product once and keeps unfinished jobs queued.
 
 ## 46. Recommended Next Version Scope
 
-**v2.1.0 — Growing Village.** Added: Fruit Harvest, orchard, river boat, community hall, three daily market demand goods, levels 8–10. Improved: fruit yields, journey returns, village order XP, prosperity visibility, property map art. Fixed: legacy save schema migration coverage and sale-price regression checks. Performance: optimized WebP cutouts; physical 60 FPS remains unverified. Visual: three original 2.5D transparent illustrations. Localization: English/Khmer strings for new gameplay; native-speaker review remains open. Next larger release should prioritize remaining crop art, touch/Khmer QA, device profiling, and first-session play testing before more systems.
+**v2.2.0 — Village Neighbors.** Added: Rice Mill item earning game, two daily map visitor portraits, original rice mill art. Improved: top-of-Farm readiness shortcuts, seed details, one-tap finished-product collection for kitchen and workshop. Fixed: schema 12→13 migration covers the new saved mini-game state. Performance: 128 KB WebP mill asset; physical 60 FPS remains unverified. Visual: original 2.5D mill cutout and restrained visitor idle motion on High quality. Localization: English/Khmer strings for new gameplay; native-speaker review remains open. Next larger release should prioritize remaining crop art, full walking NPC assets, physical-device profiling, and first-session play testing.

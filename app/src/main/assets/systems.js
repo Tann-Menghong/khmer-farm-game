@@ -23,7 +23,7 @@
   function validJobs(raw, catalog) {
     return (Array.isArray(raw)?raw:[]).filter(job=>job&&catalog.some(item=>item.id===job.id)
       &&Number.isFinite(Number(job.at))&&Number(job.at)>0)
-      .slice(0,2).map(job=>({id:job.id,at:Number(job.at),amount:Math.max(1,Math.min(2,Number(job.amount)||1))}));
+      .slice(0,3).map(job=>({id:job.id,at:Number(job.at),amount:Math.max(1,Math.min(2,Number(job.amount)||1))}));
   }
   function cookingSeconds(level) { return 20+Math.max(1,Number(level)||1)*7; }
   const demandPool=['rice','fish','banana','mango','lotus','coconut','corn','krama','rice_flour'];

@@ -25,6 +25,9 @@
     session.target=5+pick(4);
     session.load=0;
   }
+  function crabRound(session) {
+    session.board=shuffle([0,1,2]);
+  }
   function cargoRound(session) {
     session.target=5+pick(4);
     session.load=0;
@@ -68,6 +71,8 @@
       fruitRound(session);
     } else if(id==='mill') {
       millRound(session);
+    } else if(id==='crab') {
+      crabRound(session);
     } else return null;
     return session;
   }
@@ -147,6 +152,11 @@
       correct=session.load+amount<=session.target;
       session.load=correct?session.load+amount:0;
       if(session.load===session.target){session.round++;if(session.round<3)millRound(session);}
+    } else if(session.id==='crab') {
+      const index=Number(value);
+      if(!Number.isInteger(index)||index<0||index>=session.board.length)return {correct:false,finished:false};
+      correct=session.board[index]===2;
+      if(correct){session.round++;if(session.round<3)crabRound(session);}
     }
     if(!correct && session.id!=='canal' && !(session.id==='lotus'&&session.open.length===1))session.mistakes++;
     session.finished=session.round===(session.id==='loom'||session.id==='canal'?4:3);

@@ -1,8 +1,8 @@
 {
-    "versionCode":  15,
-    "versionName":  "2.2.0",
-    "apkUrl":  "https://raw.githubusercontent.com/Tann-Menghong/khmer-farm-game/main/releases/srok-srae-v2.2.0-release.apk",
-    "apkSize":  5604114,
-    "sha256":  "97c87b195993136cb12103fe1013b1ebcc8f6ae48225a96a58013fd7e2db8ee2",
-    "notes":  "Village Neighbors: an item-earning Rice Mill challenge, original mill art, tappable village friends, ready-action Farm shortcuts, clearer seed cards, and one-tap collection of finished kitchen and workshop goods. Offline play and older saves remain supported."
+    "versionCode":  16,
+    "versionName":  "2.3.0",
+    "apkUrl":  "https://raw.githubusercontent.com/Tann-Menghong/khmer-farm-game/main/releases/srok-srae-v2.3.0-release.apk",
+    "apkSize":  5725457,
+    "sha256":  "579c3f1ccaf3cc0d5402506ac3221a94c7a6947a00129084f872b4010f58ba92",
+    "notes":  "Village Days: optional daily village tasks with no streak penalty, item-earning Coastal Crab Traps after a Kep visit, original trap art, and levels 11–12 with third kitchen and workshop slots. Existing saves and offline core play remain supported."
 }
